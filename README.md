@@ -1,6 +1,6 @@
 # agent-harness
 
-**[中文介绍](docs/INTRO.md#中文版) · [English Introduction](docs/INTRO.md)**
+**[中文介绍](docs/INTRO.md#中文版) · [English Introduction](docs/INTRO.md) · [GitHub](https://github.com/H-Mr/llm-harness) · [PyPI](https://pypi.org/project/llm-harness/)**
 
 **Production-grade reusable agent infrastructure base — ~10,000 lines, 290 tests.**
 
