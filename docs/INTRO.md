@@ -144,7 +144,7 @@ The `process_direct` call triggers: LLM call → tool_call detected → permissi
 pip install llm-harness[all]
 ```
 
-GitHub: [github.com/H-Mr/Agent-Harness](https://github.com/H-Mr/Agent-Harness)
+GitHub: [github.com/H-Mr/llm-harness](https://github.com/H-Mr/llm-harness)
 
 Read the source. Read the tests. Build something.
 
@@ -242,6 +242,6 @@ LLM → 权限检查 → Hook执行(前置) → 工具执行 → Hook执行(后�
 pip install llm-harness[all]
 ```
 
-GitHub: [github.com/H-Mr/Agent-Harness](https://github.com/H-Mr/Agent-Harness)
+GitHub: [github.com/H-Mr/llm-harness](https://github.com/H-Mr/llm-harness)
 
 读源码。读测试。开始构建。
