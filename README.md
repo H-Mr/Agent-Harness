@@ -208,8 +208,8 @@ pip install agent-harness[dev]          # + pytest, ruff
 
 ## Requirements
 
-Core: Python >= 3.10, pydantic >= 2.0, httpx >= 0.27, pyyaml >= 6.0
-Optional: `anthropic`, `openai`, `mcp`, `croniter`, `ddgs`, `readability-lxml`
+Core: Python >= 3.10, pydantic >= 2.0, httpx >= 0.27, pyyaml >= 6.0, mcp >= 1.0, croniter >= 2.0, json-repair >= 0.57
+Optional: `anthropic`, `openai`, `ddgs`, `readability-lxml`
 
 ## Tests
 
@@ -240,4 +240,4 @@ MIT — see [LICENSE](LICENSE).
 Extracted and refined from two mature open-source agent projects:
 
 - [OpenHarness](https://github.com/HKUDS/OpenHarness) — tools, permissions, hooks, skills, sandbox, plugins, tasks
-- [nanobot](https://github.com/nanobot) — agent loop, providers, message bus, session, memory, cron, channels
+- nanobot — agent loop, providers, message bus, session, memory, cron, channels
