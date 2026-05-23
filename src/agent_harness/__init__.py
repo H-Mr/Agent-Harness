@@ -56,9 +56,15 @@ from agent_harness.skills.types import SkillDefinition
 from agent_harness.cron.service import CronService
 from agent_harness.cron.types import CronJob, CronPayload, CronSchedule, CronStore
 
+# Permissions
+from agent_harness.permissions.checker import PermissionChecker
+from agent_harness.permissions.modes import PermissionMode
+from agent_harness.permissions.settings import PermissionSettings
+
 # Config
 from agent_harness.config.loader import get_default_config_path, load_config, save_config
-from agent_harness.config.schema import AgentConfig, Config
+from agent_harness.config.schema import AgentConfig, Config, ObservabilityConfig, ToolsConfig
+from agent_harness.tools.builder import build_tools_from_config
 
 # MCP
 from agent_harness.mcp.client import MCPToolWrapper, connect_mcp_servers
@@ -103,9 +109,16 @@ __all__ = [
     "CronSchedule",
     "CronStore",
     "CronService",
+    # Permissions
+    "PermissionChecker",
+    "PermissionMode",
+    "PermissionSettings",
     # Config
     "AgentConfig",
     "Config",
+    "ObservabilityConfig",
+    "ToolsConfig",
+    "build_tools_from_config",
     "get_default_config_path",
     "load_config",
     "save_config",
