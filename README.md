@@ -1,5 +1,7 @@
 # agent-harness
 
+**[中文介绍](docs/INTRO.md#中文版) · [English Introduction](docs/INTRO.md)**
+
 **Production-grade reusable agent infrastructure base — ~10,000 lines, 290 tests.**
 
 Build an AI agent by defining your tools, writing your skills, and choosing a provider. Everything else — ReAct loop, tool pipeline, permissions, hooks, session persistence, memory consolidation, observability — is handled by the harness.
