@@ -1,4 +1,4 @@
-# agent-harness: The Missing Base Layer for AI Agents
+# llm-harness: The Missing Base Layer for AI Agents
 
 *[中文版见下方](#中文版)*
 
@@ -18,7 +18,7 @@ Building a production AI agent today has exactly three paths, none ideal:
 
 The gap is obvious: there's no Flask for AI agents. No thin, well-tested base that handles the plumbing so you can focus on your business logic.
 
-## What agent-harness Is
+## What llm-harness Is
 
 **~10,000 lines of Python. 290 tests. MIT license.**
 
@@ -29,7 +29,7 @@ It is not a framework. It is infrastructure — the layer between the LLM and yo
                     │   Your Business Logic │
                     │  (tools, skills, UI)  │
                     ├──────────────────────┤
-                    │   agent-harness       │  ← You are here
+                    │   llm-harness         │  ← You are here
                     │  loop · tools · retry │
                     │  session · memory     │
                     │  permissions · hooks  │
@@ -166,7 +166,7 @@ Read the source. Read the tests. Build something.
 
 空白很明显：**AI agent 领域没有 Flask。** 没有一个轻量、经过测试的基座，帮你处理基础设施，让你专注于业务逻辑。
 
-## agent-harness 是什么
+## llm-harness 是什么
 
 **约 10,000 行 Python。290 个测试。MIT 许可证。**
 
@@ -177,7 +177,7 @@ Read the source. Read the tests. Build something.
                     │   你的业务逻辑         │
                     │  (工具、技能、UI)      │
                     ├──────────────────────┤
-                    │   agent-harness       │  ← 你在这里
+                    │   llm-harness         │  ← 你在这里
                     │  循环·工具·重试       │
                     │  session·memory       │
                     │  权限·hook            │

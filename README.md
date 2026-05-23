@@ -1,4 +1,4 @@
-# agent-harness
+# llm-harness
 
 **[中文介绍](docs/INTRO.md#中文版) · [English Introduction](docs/INTRO.md) · [GitHub](https://github.com/H-Mr/llm-harness) · [PyPI](https://pypi.org/project/llm-harness/)**
 
@@ -29,7 +29,7 @@ print(result.final_content)
 |--------|---------|
 | **LangChain/LangGraph** | 300K+ lines, 50+ dependencies, constant API churn |
 | **From scratch** | Rebuild loop, retry, registry, session, permissions... every time |
-| **agent-harness** | ~10K lines. Read in an afternoon. Fork without fear. 290 tests |
+| **llm-harness** | ~10K lines. Read in an afternoon. Fork without fear. 290 tests |
 
 ## Architecture
 
@@ -45,7 +45,7 @@ Every event flows through:
 ```
 
 ```
-agent-harness/
+llm-harness/
   loop/             ReAct skeleton + concurrency (per-session Lock + Semaphore)
   tools/            24 built-in tools + config-driven builder
   providers/        Anthropic + OpenAI-compatible (25 backends), retry + backoff
@@ -131,7 +131,7 @@ asyncio.run(main())
   "agent": { "model": "claude-sonnet-4-6" },
   "tools": { "enabled": ["web_search", "message", "write_memory"] },
   "permission": { "mode": "default" },
-  "observability": { "track_file": "~/.agent-harness/track.jsonl" }
+  "observability": { "track_file": "~/.llm-harness/track.jsonl" }
 }
 ```
 
@@ -179,7 +179,7 @@ spec:
   template:
     spec:
       containers:
-      - image: agent-harness:latest
+      - image: llm-harness:latest
         env:
         - name: AGENT_SCENARIO
           value: "customer-service"
