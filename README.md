@@ -244,4 +244,4 @@ MIT — see [LICENSE](LICENSE).
 Extracted and refined from two mature open-source agent projects:
 
 - [OpenHarness](https://github.com/HKUDS/OpenHarness) — tools, permissions, hooks, skills, sandbox, plugins, tasks
-- nanobot — agent loop, providers, message bus, session, memory, cron, channels
+- [nanobot](https://github.com/HKUDS/nanobot) — agent loop, providers, message bus, session, memory, cron, channels
