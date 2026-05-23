@@ -1,6 +1,10 @@
 # llm-harness
 
-**[中文介绍](docs/INTRO.md#中文版) · [English Introduction](docs/INTRO.md) · [GitHub](https://github.com/H-Mr/llm-harness) · [PyPI](https://pypi.org/project/llm-harness/)**
+[![PyPI version](https://img.shields.io/pypi/v/llm-harness)](https://pypi.org/project/llm-harness/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-290%20passed-brightgreen)]()
+
+**[中文介绍](docs/INTRO.md#中文版) · [English Introduction](docs/INTRO.md) · [GitHub](https://github.com/H-Mr/llm-harness)**
 
 **Production-grade reusable agent infrastructure base — ~10,000 lines, 290 tests.**
 
