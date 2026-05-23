@@ -50,7 +50,7 @@ LLM → Permission.check → Hook.execute(PRE) → Tool.execute → Hook.execute
 | Layer | What | Why you need it |
 |-------|------|----------------|
 | **Loop** | ReAct skeleton with per-session lock + global semaphore | Deterministic concurrency, no race conditions |
-| **Tools** | 18 built-in + config-driven builder | `tools.enabled: ["web_search", "message"]` in JSON |
+| **Tools** | 24 built-in + config-driven builder | `tools.enabled: ["web_search", "message"]` in JSON |
 | **Providers** | Anthropic + OpenAI-compatible (25 backends) | Retry with exponential backoff + image-strip fallback |
 | **Permissions** | Sensitive path protection, 3 modes, path/cmd rules | Defense in depth for every tool call |
 | **Hooks** | PreToolUse/PostToolUse, 4 types | Validation, logging, audit — pluggable |
@@ -71,7 +71,7 @@ LLM → Permission.check → Hook.execute(PRE) → Tool.execute → Hook.execute
     25 provider backends
     24 built-in tools
     11 event types
-     5 core dependencies
+     6 core dependencies
      1 design rule: everything is a callback, nothing is inherited
 ```
 
@@ -82,8 +82,8 @@ This is a customer service agent. The harness handles the loop, retry, permissio
 ```python
 from agent_harness import (
     AgentLoop, LoopCallbacks, BaseTool, ToolRegistry,
-    ToolResult, AnthropicProvider, Config, ToolsConfig,
-    build_tools_from_config, PermissionChecker, PermissionSettings,
+    ToolResult, ToolExecutionContext, AnthropicProvider,
+    Config, ToolsConfig, build_tools_from_config,
 )
 
 # 1. Your business tool
@@ -103,12 +103,20 @@ config = Config(
 tools = build_tools_from_config(config.tools)
 tools.register(OrderQueryTool())
 
+async def _exec(tools, name, args):
+    tool = tools.get(name)
+    parsed = tool.input_model.model_validate(args)
+    result = await tool.execute(parsed, ToolExecutionContext(cwd=Path.cwd()))
+    return result.output
+
 # 3. Wire it up
 callbacks = LoopCallbacks(
-    build_messages=your_context_builder,
-    execute_tool=your_tool_executor,
+    build_messages=lambda msg: [
+        {"role": "system", "content": "You are a helpful CS agent."},
+        {"role": "user", "content": msg.content},
+    ],
+    execute_tool=lambda name, args: _exec(tools, name, args),
     get_tool_definitions=lambda: tools.to_api_schema("anthropic"),
-    on_event=your_metrics_collector,  # optional
 )
 
 agent = AgentLoop(AnthropicProvider(api_key="..."), callbacks)
@@ -190,7 +198,7 @@ LLM → 权限检查 → Hook执行(前置) → 工具执行 → Hook执行(后�
 | 层次 | 组件 | 用途 |
 |------|------|------|
 | 循环 | ReAct 骨架 + 并发控制（per-session Lock + Semaphore） | 确定性的并发，无竞态 |
-| 工具 | 18 个内建 + 配置驱动 | JSON 里写 `"enabled": ["web_search"]` |
+| 工具 | 24 个内建 + 配置驱动 | JSON 里写 `"enabled": ["web_search"]` |
 | Provider | Anthropic + OpenAI 兼容（25 个后端） | 指数退避重试 + image-strip 回退 |
 | 权限 | 敏感路径保护 + 3 种模式 + 路径/命令规则 | 每次工具调用的纵深防御 |
 | Hook | PreToolUse/PostToolUse + 4 种类型 | 校验、日志、审计——可插拔 |
@@ -211,7 +219,7 @@ LLM → 权限检查 → Hook执行(前置) → 工具执行 → Hook执行(后�
     25 个 provider 后端
     24 个内建工具
     11 种事件类型
-     5 个核心依赖
+     6 个核心依赖
      1 条设计原则：一切走 callback 注入，零继承
 ```
 

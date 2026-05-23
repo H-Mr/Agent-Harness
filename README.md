@@ -78,6 +78,7 @@ pip install agent-harness[all]
 
 ```python
 import asyncio
+from pathlib import Path
 from agent_harness import (
     AgentLoop, LoopCallbacks, ToolRegistry, BaseTool,
     ToolResult, ToolExecutionContext, AnthropicProvider,
@@ -207,9 +208,8 @@ pip install agent-harness[dev]          # + pytest, ruff
 
 ## Requirements
 
-- Python >= 3.10
-- Pydantic >= 2.0, httpx >= 0.27
-- Optional: `anthropic`, `openai`, `mcp`, `croniter`, `ddgs`, `readability-lxml`
+Core: Python >= 3.10, pydantic >= 2.0, httpx >= 0.27, pyyaml >= 6.0
+Optional: `anthropic`, `openai`, `mcp`, `croniter`, `ddgs`, `readability-lxml`
 
 ## Tests
 
