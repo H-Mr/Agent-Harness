@@ -47,7 +47,7 @@ Every event flows through:
 ```
 agent-harness/
   loop/             ReAct skeleton + concurrency (per-session Lock + Semaphore)
-  tools/            18 built-in tools + config-driven builder
+  tools/            24 built-in tools + config-driven builder
   providers/        Anthropic + OpenAI-compatible (25 backends), retry + backoff
   permissions/      Sensitive path protection, 3 modes, path/cmd rules
   hooks/            PreToolUse/PostToolUse, 4 hook types (cmd/http/prompt/agent)
