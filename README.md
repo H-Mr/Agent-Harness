@@ -73,7 +73,7 @@ agent-harness/
 ## Quick Start
 
 ```bash
-pip install agent-harness[all]
+pip install llm-harness[all]
 ```
 
 ```python
@@ -199,11 +199,11 @@ Kafka: topic:customer-service → cs-agent (3 pods)
 ## Installation
 
 ```bash
-pip install agent-harness               # base
-pip install agent-harness[anthropic]    # + Claude
-pip install agent-harness[openai]       # + OpenAI
-pip install agent-harness[all]          # everything
-pip install agent-harness[dev]          # + pytest, ruff
+pip install llm-harness               # base
+pip install llm-harness[anthropic]    # + Claude
+pip install llm-harness[openai]       # + OpenAI
+pip install llm-harness[all]          # everything
+pip install llm-harness[dev]          # + pytest, ruff
 ```
 
 ## Requirements

@@ -3,10 +3,11 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "agent-harness"
+name = "llm-harness"
 version = "0.1.0"
-description = "Reusable agent harness base — ReAct loop + tool registry + provider abstraction + memory + skills"
-license = "MIT"
+description = "Production-grade reusable AI agent infrastructure base"
+license = {text = "MIT"}
+readme = "README.md"
 requires-python = ">=3.10"
 
 dependencies = [

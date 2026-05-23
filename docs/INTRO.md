@@ -141,7 +141,7 @@ The `process_direct` call triggers: LLM call → tool_call detected → permissi
 ## Next Steps
 
 ```bash
-pip install agent-harness[all]
+pip install llm-harness[all]
 ```
 
 GitHub: [github.com/H-Mr/Agent-Harness](https://github.com/H-Mr/Agent-Harness)
@@ -239,7 +239,7 @@ LLM → 权限检查 → Hook执行(前置) → 工具执行 → Hook执行(后�
 ## 开始
 
 ```bash
-pip install agent-harness[all]
+pip install llm-harness[all]
 ```
 
 GitHub: [github.com/H-Mr/Agent-Harness](https://github.com/H-Mr/Agent-Harness)
