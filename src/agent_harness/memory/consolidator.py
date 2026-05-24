@@ -10,6 +10,7 @@ import asyncio
 import json
 import logging
 import weakref
+from collections.abc import Awaitable
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable
@@ -291,7 +292,7 @@ class MemoryConsolidator:
         model: str,
         sessions: SessionManager,
         context_window_tokens: int,
-        build_messages: Callable[..., list[dict[str, Any]]],
+        build_messages: Callable[..., list[dict[str, Any]] | Awaitable[list[dict[str, Any]]]],
         get_tool_definitions: Callable[[], list[dict[str, Any]]],
         max_completion_tokens: int = 4096,
     ):
@@ -335,7 +336,7 @@ class MemoryConsolidator:
 
         return last_boundary
 
-    def estimate_session_prompt_tokens(self, session: Session) -> tuple[int, str]:
+    async def estimate_session_prompt_tokens(self, session: Session) -> tuple[int, str]:
         """Estimate current prompt size for the normal session history view."""
         history = session.get_history(max_messages=0)
         channel, chat_id = (session.key.split(":", 1) if ":" in session.key else (None, None))
@@ -345,6 +346,8 @@ class MemoryConsolidator:
             channel=channel,
             chat_id=chat_id,
         )
+        if asyncio.iscoroutine(probe_messages):
+            probe_messages = await probe_messages
         return estimate_prompt_tokens_chain(
             self.provider,
             self.model,
@@ -374,7 +377,7 @@ class MemoryConsolidator:
         async with lock:
             budget = self.context_window_tokens - self.max_completion_tokens - self._SAFETY_BUFFER
             target = budget // 2
-            estimated, source = self.estimate_session_prompt_tokens(session)
+            estimated, source = await self.estimate_session_prompt_tokens(session)
             if estimated <= 0:
                 return
             if estimated < budget:
@@ -419,6 +422,6 @@ class MemoryConsolidator:
                 session.last_consolidated = end_idx
                 self.sessions.save(session)
 
-                estimated, source = self.estimate_session_prompt_tokens(session)
+                estimated, source = await self.estimate_session_prompt_tokens(session)
                 if estimated <= 0:
                     return

@@ -17,6 +17,7 @@ from agent_harness.observability.tracker import Tracker
 from agent_harness.permissions.checker import PermissionChecker, PermissionDecision
 from agent_harness.permissions.modes import PermissionMode
 from agent_harness.permissions.settings import PermissionSettings
+from agent_harness.prompts.sections import IdentitySection
 from agent_harness.bus.events import InboundMessage
 from unittest.mock import patch
 
@@ -737,3 +738,62 @@ class TestAgentProcess:
         )
         result = await agent.process(msg)
         assert result is None
+
+
+# ---------------------------------------------------------------------------
+# End-to-end multi-turn conversation test
+# ---------------------------------------------------------------------------
+
+
+class TestEndToEnd:
+    """End-to-end multi-turn conversation with session persistence and tool calls."""
+
+    async def test_multi_turn_conversation(self, tmp_path: Path) -> None:
+        """Multiple turns with session persistence and tool calls."""
+        sessions_dir = tmp_path / "sessions"
+        memory_dir = tmp_path / "memory"
+
+        agent = Agent(
+            Harness(
+                provider=MockProvider(responses=[
+                    # Turn 1a: tool call
+                    LLMResponse(
+                        content=None,
+                        tool_calls=[
+                            ToolCallRequest(
+                                id="call_echo_1",
+                                name="echo",
+                                arguments={"text": "ECHO: hello"},
+                            )
+                        ],
+                        finish_reason="tool_calls",
+                        usage={},
+                    ),
+                    # Turn 1b: follow-up after tool execution
+                    LLMResponse(content="I echoed: ECHO: hello", usage={}),
+                    # Turn 2: direct response
+                    LLMResponse(content="Nice to meet you!", usage={}),
+                ]),
+                sessions=str(sessions_dir),
+                memory=str(memory_dir),
+                context=[IdentitySection("You are a test bot.")],
+            ),
+        )
+        agent.harness.tools.register(EchoTool())
+
+        # Turn 1
+        result1 = await agent.process(
+            InboundMessage("cli", "u1", "c1", "echo hello")
+        )
+        assert result1 is not None
+        assert "ECHO: hello" in result1.content
+
+        # Turn 2
+        result2 = await agent.process(
+            InboundMessage("cli", "u1", "c1", "nice!")
+        )
+        assert result2 is not None
+        assert "Nice to meet you!" in result2.content
+
+        # Session file exists (inside workspace/sessions/)
+        assert len(list((sessions_dir / "sessions").glob("*.jsonl"))) > 0
