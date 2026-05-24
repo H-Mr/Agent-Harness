@@ -69,6 +69,10 @@ from agent_harness.tools.builder import build_tools_from_config
 # Observability
 from agent_harness.observability.tracker import start_tracker_from_config
 
+# Harness + Agent
+from agent_harness.harness import Harness
+from agent_harness.agent import Agent
+
 # MCP
 from agent_harness.mcp.client import MCPToolWrapper, connect_mcp_servers
 
@@ -127,6 +131,9 @@ __all__ = [
     "save_config",
     # Observability
     "start_tracker_from_config",
+    # Harness + Agent
+    "Harness",
+    "Agent",
     # MCP
     "MCPToolWrapper",
     "connect_mcp_servers",
