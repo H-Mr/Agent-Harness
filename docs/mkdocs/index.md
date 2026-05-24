@@ -78,18 +78,13 @@ LLM → Permission.check → Hook.execute(PRE) → Tool.execute → Hook.execute
 Session → Consolidation → Context → ReAct → Persist → OutboundMessage
 ```
 
-```
-┌──────────────────────────────────────────────────┐
-│  Agent.process(msg) → OutboundMessage            │
-├──────────────────────────────────────────────────┤
-│  Harness                                         │
-│   Message Pipeline: Session → Memory → Context   │
-│   Tool Pipeline:  Lookup → Validate → Execute    │
-├──────────────────────────────────────────────────┤
-│  Parts: tools │ providers │ permissions │ hooks  │
-│  session │ memory │ observability │ cron │ mcp   │
-│  channels │ commands │ plugins │ sandbox         │
-└──────────────────────────────────────────────────┘
+```mermaid
+block-beta
+  columns 1
+  block:agent["Agent.process(msg) → OutboundMessage"]
+  block:harness["Harness<br/>消息管线: Session→Memory→Context<br/>工具管线: Lookup→Validate→Execute"]
+  block:parts["零件库: tools · providers · permissions · hooks · session · memory · observability · cron · mcp · channels"]
+  agent --> harness --> parts
 ```
 
 ---
