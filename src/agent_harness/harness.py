@@ -159,6 +159,11 @@ def _load_hooks_from_path(path: str | Path) -> HookRegistry:
         log.warning("Failed to parse hooks file %s: %s", hook_path, exc)
         return HookRegistry()
 
+    if not isinstance(raw, dict):
+        log.warning("Hooks file %s contains a JSON %s instead of an object; expected {event: [hooks...]}",
+                     hook_path, type(raw).__name__)
+        return HookRegistry()
+
     registry = HookRegistry()
     for raw_event, hooks_list in raw.items():
         try:
