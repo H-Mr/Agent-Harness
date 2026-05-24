@@ -194,21 +194,18 @@ class Harness:
     them to concrete instances.  Designed to work with the Agent class
     that consumes these resolved parts.
 
-    Shorthand resolution table
-    ==========================
+    **Shorthand resolution:**
 
-    =============== ===========================================
-    Parameter       Accepted types
-    =============== ===========================================
-    tools           ``ToolRegistry | ToolsConfig | list[str] | None``
-    permissions     ``PermissionChecker | PermissionSettings | str("default"|"plan"|"auto") | None``
-    memory          ``MemoryStore | str(path) | Path | None``
-    sessions        ``SessionManager | str(path) | Path | None``
-    context         ``ContextBuilder | list[SectionProvider] | None``
-    skills          ``SkillRegistry | list[str | Path] | None``
-    hooks           ``HookRegistry | str(path) | Path | None``
-    tracker         ``str(path) | Path | None``
-    =============== ===========================================
+    | Parameter | Accepted types |
+    |-----------|---------------|
+    | `tools` | `ToolRegistry`, `ToolsConfig`, `list[str]`, or `None` |
+    | `permissions` | `PermissionChecker`, `PermissionSettings`, `"default"`, `"plan"`, `"auto"`, or `None` |
+    | `memory` | `MemoryStore`, `str` path, `Path`, or `None` |
+    | `sessions` | `SessionManager`, `str` path, `Path`, or `None` |
+    | `context` | `ContextBuilder`, `list[SectionProvider]`, or `None` |
+    | `skills` | `SkillRegistry`, `list[str, Path]`, or `None` |
+    | `hooks` | `HookRegistry`, `str` path, `Path`, or `None` |
+    | `tracker` | `str` path, `Path`, or `None` |
     """
 
     def __init__(
