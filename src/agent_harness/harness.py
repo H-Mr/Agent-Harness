@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, Callable, Coroutine
+from typing import Any, Awaitable, Callable
 
 from agent_harness.config.schema import Config, ToolsConfig
 from agent_harness.context.base import ContextBuilder, SectionProvider
@@ -47,22 +47,22 @@ log = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 ToolCheckCallback = Callable[
-    [str, bool, str | None, str | None],
-    Coroutine[Any, Any, PermissionDecision | bool],
+    [str, "BaseTool", Any],  # (tool_name, tool_instance, parsed_args)
+    Awaitable[PermissionDecision],
 ]
-"""Signature: async (tool_name, is_read_only, file_path, command) -> PermissionDecision|bool"""
+"""Signature: async (tool_name, tool_instance, parsed_args) -> PermissionDecision"""
 
 BuildContextCallback = Callable[
-    [ContextBuilder],
-    Coroutine[Any, Any, str],
+    ["InboundMessage", list[dict[str, Any]]],  # (msg, history)
+    Awaitable[list[dict[str, Any]]],
 ]
-"""Signature: async (context_builder) -> str"""
+"""Signature: async (msg, history) -> list[dict[str, Any]]"""
 
 ErrorCallback = Callable[
-    [Exception, str],
-    Coroutine[Any, Any, None],
+    [Exception, str],  # (exception, context)
+    Awaitable[str | None],  # return user-facing message or None
 ]
-"""Signature: async (exception, context) -> None"""
+"""Signature: async (exception, context) -> str | None"""
 
 
 # ---------------------------------------------------------------------------
@@ -203,7 +203,7 @@ class Harness:
     def __init__(
         self,
         *,
-        provider: LLMProvider | None = None,
+        provider: LLMProvider,
         workspace: str | Path = Path.cwd(),
         tools: ToolRegistry | ToolsConfig | list[str] | None = None,
         permissions: PermissionChecker | PermissionSettings | str | None = None,
@@ -216,8 +216,8 @@ class Harness:
         on_tool_check: ToolCheckCallback | None = None,
         on_build_context: BuildContextCallback | None = None,
         on_error: ErrorCallback | None = None,
-        context_window_tokens: int = 200_000,
-        max_completion_tokens: int = 8192,
+        context_window_tokens: int = 64_000,
+        max_completion_tokens: int = 4096,
     ) -> None:
         workspace = Path(workspace).expanduser().resolve()
 
@@ -297,10 +297,10 @@ class Harness:
     def _resolve_memory(
         memory: MemoryStore | str | Path | None,
         workspace: Path,
-    ) -> MemoryStore:
-        """Resolve *memory* to a ``MemoryStore`` instance."""
+    ) -> MemoryStore | None:
+        """Resolve *memory* to a ``MemoryStore`` instance, or ``None``."""
         if memory is None:
-            return MemoryStore(workspace / "memory")
+            return None
         if isinstance(memory, MemoryStore):
             return memory
         if isinstance(memory, (str, Path)):
@@ -311,10 +311,10 @@ class Harness:
     def _resolve_sessions(
         sessions: SessionManager | str | Path | None,
         workspace: Path,
-    ) -> SessionManager:
-        """Resolve *sessions* to a ``SessionManager`` instance."""
+    ) -> SessionManager | None:
+        """Resolve *sessions* to a ``SessionManager`` instance, or ``None``."""
         if sessions is None:
-            return SessionManager(workspace)
+            return None
         if isinstance(sessions, SessionManager):
             return sessions
         if isinstance(sessions, (str, Path)):
@@ -340,10 +340,10 @@ class Harness:
     @staticmethod
     def _resolve_skills(
         skills: SkillRegistry | list[str | Path] | None,
-    ) -> SkillRegistry:
-        """Resolve *skills* to a ``SkillRegistry`` instance."""
+    ) -> SkillRegistry | None:
+        """Resolve *skills* to a ``SkillRegistry`` instance, or ``None``."""
         if skills is None:
-            return SkillRegistry()
+            return None
         if isinstance(skills, SkillRegistry):
             return skills
         if isinstance(skills, list):
@@ -353,10 +353,10 @@ class Harness:
     @staticmethod
     def _resolve_hooks(
         hooks: HookRegistry | str | Path | None,
-    ) -> HookRegistry:
-        """Resolve *hooks* to a ``HookRegistry`` instance."""
+    ) -> HookRegistry | None:
+        """Resolve *hooks* to a ``HookRegistry`` instance, or ``None``."""
         if hooks is None:
-            return HookRegistry()
+            return None
         if isinstance(hooks, HookRegistry):
             return hooks
         if isinstance(hooks, (str, Path)):
@@ -379,25 +379,34 @@ class Harness:
     async def _default_tool_check(
         self,
         tool_name: str,
-        is_read_only: bool,
-        file_path: str | None = None,
-        command: str | None = None,
+        tool: "BaseTool",
+        parsed_args: Any,
     ) -> PermissionDecision:
         """Default tool check: delegate to the configured ``PermissionChecker``."""
         return self.permissions.evaluate(
             tool_name,
-            is_read_only=is_read_only,
-            file_path=file_path,
-            command=command,
+            is_read_only=tool.is_read_only(parsed_args),
         )
 
-    async def _default_build_context(self, context_builder: ContextBuilder) -> str:
-        """Default context builder: assemble all section providers."""
-        return await context_builder.build_system_prompt()
+    async def _default_build_context(
+        self,
+        msg: "InboundMessage",
+        history: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        """Default context builder: assemble system prompt and message list."""
+        system = await self.context.build_system_prompt()
+        return self.context.build_messages(
+            system,
+            history,
+            msg.content,
+            channel=getattr(msg, "channel", None),
+            chat_id=getattr(msg, "chat_id", None),
+        )
 
-    async def _default_on_error(self, exception: Exception, context: str) -> None:
-        """Default error handler: log the exception with context."""
+    async def _default_on_error(self, exception: Exception, context: str) -> str | None:
+        """Default error handler: log the exception and return a user-facing message."""
         log.exception("Error in %s: %s", context, exception)
+        return "Sorry, I encountered an error processing your request."
 
     # ------------------------------------------------------------------
     # Skills auto-injection
@@ -405,7 +414,7 @@ class Harness:
 
     def _auto_inject_skills(self) -> None:
         """Add a ``SkillsSection`` to the context builder when skills are configured."""
-        if self.skills and self.skills.list_skills():
+        if self.skills is not None and self.skills.list_skills():
             section = SkillsSection(self.skills)
             self.context.add_provider(section)
 
@@ -478,7 +487,7 @@ class Harness:
             skills=None,
             hooks=None,
             tracker=tracker,
-            context_window_tokens=200_000,
+            context_window_tokens=getattr(config.agent, "context_window_tokens", 64_000),
             max_completion_tokens=config.agent.max_tokens,
         )
 
