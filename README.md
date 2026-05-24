@@ -4,242 +4,145 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-337%20passed-brightgreen)]()
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)]()
+[![Docs](https://img.shields.io/badge/docs-中文文档-3949ab)](https://h-mr.github.io/llm-harness/)
 
-**[中文介绍](docs/INTRO.md#中文版) · [English Introduction](docs/INTRO.md) · [GitHub](https://github.com/H-Mr/llm-harness)**
+**生产级可复用的 AI Agent 基础设施基座 — 约 13,000 行 Python，337 项测试。**
 
-**Production-grade reusable agent infrastructure base — ~13,000 lines, 337 tests.**
+```
+Harness + LLM = Agent
+```
 
-Build an AI agent by dropping in a provider, tools, and context. Everything else — ReAct loop, tool pipeline, permissions, hooks, session persistence, memory consolidation, observability — is handled by the harness.
+Harness 处理 LLM 推理之外的一切：工具管线、权限检查、会话持久化、记忆合并、钩子系统、观测追踪。Agent 只有 `process(msg)` 一个方法。
 
 ```python
-from agent_harness import Agent, Harness, OpenAICompatProvider
-from agent_harness.prompts.sections import IdentitySection
-
-agent = Agent(
-    Harness(
-        provider=OpenAICompatProvider(api_key="...", api_base="..."),
-        tools=["read_file", "write_file", "exec", "web_search"],
-        context=[IdentitySection("You are a helpful assistant.")],
-    ),
-    model="gpt-4",
-)
-
-result = await agent.process(InboundMessage(channel="cli", sender_id="user", chat_id="c1", content="Do the thing"))
-print(result.content)
-```
-
-## Why This Exists
-
-| Option | Problem |
-|--------|---------|
-| **LangChain/LangGraph** | 300K+ lines, 50+ dependencies, constant API churn |
-| **From scratch** | Rebuild loop, retry, registry, session, permissions... every time |
-| **llm-harness** | ~13K lines. Read in an afternoon. Fork without fear. 337 tests |
-| **llm-harness (v0.2)** | + Harness/Agent: 25 lines to a running agent |
-
-## Architecture
-
-```
-Each tool call goes through:
-  LLM → Permission.check → Hook.execute(PRE_TOOL_USE) → Tool.execute → Hook.execute(POST_TOOL_USE) → LLM
-
-Each conversation turn goes through:
-  Message → AgentLoop → Provider.chat_with_retry → (tool calls? → execute → loop) → Text response
-
-Every event flows through:
-  Any module → EventBus → Tracker (JSONL file) / Prometheus / Dashboard
-```
-
-```
-llm-harness/
-  harness.py        Harness — infrastructure container + from_config()
-  agent.py          Agent — single process(msg) entry point
-  loop/             ReAct skeleton + concurrency (per-session Lock + Semaphore)
-  tools/            28 built-in tools + config-driven builder
-  providers/        Anthropic + OpenAI-compatible (25 backends), retry + backoff
-  permissions/      Sensitive path protection, 3 modes, path/cmd rules
-  hooks/            PreToolUse/PostToolUse, 4 hook types (cmd/http/prompt/agent)
-  security/         SSRF protection (DNS + private IP blocking)
-  sandbox/          OS-level isolation (srt CLI wrapper), built into ExecTool
-  session/          JSONL persistence + legal boundary alignment
-  memory/           Two-tier (MEMORY.md + HISTORY.md) + LLM consolidation
-  skills/           .md loading + dependency checking
-  cron/             Scheduler (at/every/cron) + management tools
-  channels/         BaseChannel ABC + WeChat + Feishu implementations
-  mcp/              MCP stdio/SSE/HTTP, tools as BaseTool subclasses
-  commands/         4-tier slash command router
-  plugins/          Discovery + manifest loading
-  auth/             Credential storage (file + keyring + encryption)
-  prompts/          AGENTS.md discovery + environment + SectionProviders
-  tasks/            Background subprocess manager + stdout capture
-  coordinator/      Subagent spawning with restricted tools
-  state/            Observable state store (get/set/subscribe)
-  config/           Multi-layer (CLI > env > file > defaults)
-  observability/    Structured events + EventBus + JSONL tracker (auto-start)
-```
-
-## Quick Start
-
-```bash
-pip install llm-harness[all]
-```
-
-```python
-import asyncio
 from agent_harness import Agent, Harness, OpenAICompatProvider
 from agent_harness.bus.events import InboundMessage
 from agent_harness.prompts.sections import IdentitySection
 
-async def main():
-    agent = Agent(
-        Harness(
-            provider=OpenAICompatProvider(
-                api_key="sk-...", api_base="https://api.openai.com/v1"
-            ),
-            tools=["read_file", "write_file", "exec"],
-            context=[IdentitySection("You are a friendly assistant.")],
-        ),
-        model="gpt-4",
-    )
-
-    result = await agent.process(
-        InboundMessage(channel="cli", sender_id="user", chat_id="c1", content="Hello!")
-    )
-    print(result.content)
-
-asyncio.run(main())
-```
-
-### Low-Level API (full control)
-
-```python
-from agent_harness import AgentLoop, LoopCallbacks, ToolRegistry, AnthropicProvider
-
-tools = ToolRegistry()
-tools.register(MyBusinessTool())
-
-callbacks = LoopCallbacks(
-    build_messages=lambda msg: [
-        {"role": "system", "content": "You are a friendly assistant."},
-        {"role": "user", "content": msg.content},
-    ],
-    execute_tool=lambda name, args: _exec(tools, name, args),
-    get_tool_definitions=lambda: tools.to_api_schema("anthropic"),
+agent = Agent(
+    Harness(
+        provider=OpenAICompatProvider(api_key="sk-...", api_base="https://api.openai.com/v1"),
+        tools=["read_file", "write_file", "exec", "web_search"],
+        context=[IdentitySection("你是一个有用的助手。")],
+    ),
+    model="gpt-4o",
 )
 
-loop = AgentLoop(AnthropicProvider(api_key="..."), callbacks)
-result = await loop.process_direct("Hello!")
-print(result.final_content)
+result = await agent.process(
+    InboundMessage(channel="cli", sender_id="user", chat_id="c1", content="你好！")
+)
+print(result.content)
 ```
 
-### Config-Driven Setup
+---
 
-```json
-{
-  "agent": { "model": "claude-sonnet-4-6", "provider": "anthropic" },
-  "tools": { "enabled": ["web_search", "message", "write_memory"] },
-  "permission": { "mode": "default" },
-  "observability": { "track_file": "~/.llm-harness/track.jsonl" }
-}
+## 为什么选择 llm-harness？
+
+| 方案 | 代价 |
+|------|------|
+| **LangChain / LangGraph** | 30 万+ 行，50+ 依赖，API 频繁变动，学习曲线以周计 |
+| **从零手写** | 每次 2–4 周重写循环、重试、注册表、会话、权限、钩子 |
+| **llm-harness** | ~13,000 行。一个下午读完。放心 Fork。MIT 协议。 |
+
+---
+
+## 快速导航
+
+| 想做什么 | 去看 |
+|---------|------|
+| 5 分钟跑起第一个 Agent | [快速开始](https://h-mr.github.io/llm-harness/tutorials/quick-start/) |
+| 写一个自定义工具 | [编写自定义工具](https://h-mr.github.io/llm-harness/tutorials/custom-tool/) |
+| JSON 配置文件驱动 | [配置文件驱动](https://h-mr.github.io/llm-harness/tutorials/config-driven/) |
+| 部署到 K8s | [部署到 K8s](https://h-mr.github.io/llm-harness/how-to/deploy-k8s/) |
+| 对接微信/飞书 | [多通道接入](https://h-mr.github.io/llm-harness/how-to/multi-channel/) |
+| 创建定时任务 | [使用 Cron](https://h-mr.github.io/llm-harness/how-to/use-cron/) |
+| 开启观测追踪 | [观测系统](https://h-mr.github.io/llm-harness/how-to/enable-observability/) |
+| 查 API 参考 | [API 参考](https://h-mr.github.io/llm-harness/api/harness/) |
+| 理解设计决策 | [架构设计](https://h-mr.github.io/llm-harness/explanation/architecture/) |
+
+**完整文档：** https://h-mr.github.io/llm-harness/
+
+---
+
+## 架构
+
+每次工具调用流经一条管线：
+
 ```
-
-```python
-from agent_harness import Agent, Harness, load_config
-
-config = load_config("config.json")
-agent = Agent(Harness.from_config(config))
-result = await agent.process(InboundMessage(channel="cli", content="Search for latest AI news"))
-```
-
-## Observability
-
-Zero-config by default. Set `observability.track_file` in config to auto-start JSONL tracking:
-
-```jsonl
-{"type":"SessionOpened","ts":"...","data":{"session_key":"cli:test"}}
-{"type":"ToolExecutionStarted","ts":"...","data":{"tool_name":"web_search","tool_input":{...}}}
-{"type":"ToolExecutionCompleted","ts":"...","data":{"tool_name":"web_search","output":"...","is_error":false,"duration_ms":123.4}}
-{"type":"AssistantTurnComplete","ts":"...","data":{"content":"Done","usage":{"prompt_tokens":10,"completion_tokens":5}}}
-```
-
-Or subscribe programmatically for real-time metrics:
-
-```python
-from agent_harness.observability import get_event_bus
-
-async def prometheus_collector(event):
-    if isinstance(event, ToolExecutionCompleted):
-        histogram(f"tool.{event.tool_name}.latency_ms", event.duration_ms)
-
-get_event_bus().subscribe(prometheus_collector)
-```
-
-## Deployment
-
-```yaml
-# One Deployment per agent scenario
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: cs-agent
-spec:
-  replicas: 3
-  template:
-    spec:
-      containers:
-      - image: llm-harness:latest
-        env:
-        - name: AGENT_SCENARIO
-          value: "customer-service"
-        volumeMounts:
-        - name: tools
-          mountPath: /app/tools
-        - name: skills
-          mountPath: /app/skills
+LLM → Permission.check → Hook.execute(PRE) → Tool.execute → Hook.execute(POST) → LLM
 ```
 
 ```
-Kafka: topic:customer-service → cs-agent (3 pods)
-       topic:code-review      → cr-agent (2 pods)
-       topic:ops-automation   → ops-agent (1 pod)
+llm-harness/
+  harness.py        Harness — 基础设施容器 + from_config()
+  agent.py          Agent — 唯一入口 process(msg)
+  loop/             ReAct 骨架 + 并发控制 (per-session Lock + Semaphore)
+  tools/            28 个内置工具 + 配置驱动构建器
+  providers/        25 个 LLM 后端 (Anthropic + OpenAI 兼容)，重试 + 退避
+  permissions/      敏感路径保护，3 种模式，路径/命令规则
+  hooks/            PreToolUse/PostToolUse，4 种钩子类型
+  security/         SSRF 防护 (DNS + 私有 IP 拦截)
+  sandbox/          OS 级隔离 (srt CLI)，内建 ExecTool
+  session/          JSONL 持久化 + 合法边界对齐
+  memory/           双层记忆 (MEMORY.md + HISTORY.md) + LLM 合并
+  channels/         BaseChannel ABC + 微信 + 飞书实现
+  cron/             调度器 (at/every/cron) + 管理工具
+  observability/    17 种事件 + EventBus + JSONL 追踪器
+  config/           多层配置 (CLI > env > file > defaults)
 ```
 
-## Installation
+---
+
+## 安装
 
 ```bash
-pip install llm-harness               # base
+pip install llm-harness               # 基础
 pip install llm-harness[anthropic]    # + Claude
 pip install llm-harness[openai]       # + OpenAI
-pip install llm-harness[all]          # everything
+pip install llm-harness[all]          # 全部
 pip install llm-harness[dev]          # + pytest, ruff
 ```
 
-## Requirements
+要求：Python >= 3.10
 
-Core: Python >= 3.10, pydantic >= 2.0, httpx >= 0.27, pyyaml >= 6.0, mcp >= 1.0, croniter >= 2.0, json-repair >= 0.57
-Optional: `anthropic`, `openai`, `ddgs`, `readability-lxml`
+---
 
-## Tests
+## 面向国内开发者
+
+通过 `OpenAICompatProvider` 原生兼容国内主流平台，只需修改 `api_base`：
+
+```python
+# DeepSeek
+OpenAICompatProvider(api_key="sk-...", api_base="https://api.deepseek.com/v1")
+
+# 阿里云百炼 (DashScope)
+OpenAICompatProvider(api_key="sk-...", api_base="https://dashscope.aliyuncs.com/compatible-mode/v1")
+
+# 智谱 (Zhipu)
+OpenAICompatProvider(api_key="...", api_base="https://open.bigmodel.cn/api/paas/v4")
+
+# 硅基流动 (SiliconFlow)
+OpenAICompatProvider(api_key="sk-...", api_base="https://api.siliconflow.cn/v1")
+
+# 火山引擎 (Volcengine)
+OpenAICompatProvider(api_key="sk-...", api_base="https://ark.cn-beijing.volces.com/api/v3")
+```
+
+---
+
+## 测试
 
 ```
 337 passed, 9 skipped, 0 failed
 ```
 
-9 skipped are optional dependency tests (ddgs, readability-lxml). Install those packages to enable them.
+## 设计原则
 
-## Design Principles
-
-1. **Harness + LLM = Agent.** Harness handles everything that isn't LLM inference. Agent is `process(msg)` — one method for all channels.
-
-2. **Callback injection, not inheritance.** Every behavior is injected. The loop knows nothing about your tools, channels, or prompts.
-
-3. **Config-driven.** Switch agent behavior via JSON. Tools, permissions, provider, sandbox, observability — all configurable without code changes.
-
-4. **Transport-agnostic.** `BaseChannel` defines the contract. CLI, HTTP, WebSocket, WeChat, Feishu — same interface.
-
-5. **You own the code.** ~13,000 lines. Fork it. Modify it. No framework to learn.
-
-6. **Production observability.** Structured events, EventBus, JSONL tracker, auto-start from config. Zero overhead when disabled.
+1. **Harness + LLM = Agent。** Harness 处理一切非 LLM 推理。Agent 只有一个 `process(msg)` 方法。
+2. **回调注入，非继承。** 所有行为通过 `LoopCallbacks` 注入，循环对你的工具和提示词一无所知。
+3. **配置驱动。** 通过 JSON 切换行为。工具、权限、Provider、沙箱、观测——无需改代码。
+4. **传输无关。** `BaseChannel` 定义契约。CLI、HTTP、WebSocket、微信、飞书——同一个接口。
+5. **你掌控代码。** ~13,000 行。放心 Fork。随意修改。无需学习框架。
 
 ## License
 
@@ -247,7 +150,7 @@ MIT — see [LICENSE](LICENSE).
 
 ## Credits
 
-Extracted and refined from two mature open-source agent projects:
+提炼自两个成熟的开源 Agent 项目：
 
 - [OpenHarness](https://github.com/HKUDS/OpenHarness) — tools, permissions, hooks, skills, sandbox, plugins, tasks
 - [nanobot](https://github.com/HKUDS/nanobot) — agent loop, providers, message bus, session, memory, cron, channels
