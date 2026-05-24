@@ -1,5 +1,5 @@
 site_name: llm-harness
-site_description: Production-grade reusable AI agent infrastructure base — build an agent in 25 lines
+site_description: 生产级 AI Agent 开发基座 — 25 行代码构建一个 Agent
 site_author: H-Mr
 site_url: https://h-mr.github.io/llm-harness/
 repo_name: H-Mr/llm-harness
@@ -11,6 +11,7 @@ copyright: MIT License — H-Mr
 
 theme:
   name: material
+  language: zh
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -18,14 +19,14 @@ theme:
       accent: indigo
       toggle:
         icon: material/brightness-7
-        name: Switch to dark mode
+        name: 切换暗色模式
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: indigo
       accent: indigo
       toggle:
         icon: material/brightness-4
-        name: Switch to light mode
+        name: 切换亮色模式
   features:
     - navigation.instant
     - navigation.tracking
@@ -66,7 +67,8 @@ markdown_extensions:
       permalink: true
 
 plugins:
-  - search
+  - search:
+      lang: zh
   - mkdocstrings:
       handlers:
         python:
@@ -85,33 +87,35 @@ plugins:
             show_submodules: true
 
 nav:
-  - Home: index.md
-  - Getting Started: getting-started.md
-  - Core Concepts:
-      - Overview: core-concepts/overview.md
-      - Harness: core-concepts/harness.md
-      - Agent: core-concepts/agent.md
-      - Tools: core-concepts/tools.md
-      - Providers: core-concepts/providers.md
-      - Permissions: core-concepts/permissions.md
-      - Memory & Session: core-concepts/memory-session.md
-      - Observability: core-concepts/observability.md
-  - Architecture: architecture.md
-  - Deployment: deployment.md
-  - Examples: examples/index.md
-  - API Reference:
+  - 首页: index.md
+  - 教程 (Tutorial):
+      - 快速开始: tutorials/quick-start.md
+      - 编写自定义工具: tutorials/custom-tool.md
+      - 配置文件驱动: tutorials/config-driven.md
+  - 指南 (How-to):
+      - 部署到 K8s: how-to/deploy-k8s.md
+      - 对接微信/飞书: how-to/multi-channel.md
+      - 创建定时任务: how-to/use-cron.md
+      - 开启观测追踪: how-to/enable-observability.md
+  - API 参考 (Reference):
       - Harness: api/harness.md
       - Agent: api/agent.md
-      - Loop: api/loop.md
-      - Tools: api/tools.md
-      - Providers: api/providers.md
-      - Permissions: api/permissions.md
-      - Hooks: api/hooks.md
-      - Memory: api/memory.md
-      - Session: api/session.md
-      - Observability: api/observability.md
-      - Cron: api/cron.md
-      - Channels: api/channels.md
+      - Loop 循环: api/loop.md
+      - Tools 工具: api/tools.md
+      - Providers 提供者: api/providers.md
+      - Permissions 权限: api/permissions.md
+      - Hooks 钩子: api/hooks.md
+      - Memory 记忆: api/memory.md
+      - Session 会话: api/session.md
+      - Observability 观测: api/observability.md
+      - Cron 定时: api/cron.md
+      - Channels 通道: api/channels.md
       - MCP: api/mcp.md
-      - Context: api/context.md
-      - Config: api/config.md
+      - Context 上下文: api/context.md
+      - Config 配置: api/config.md
+  - 解释 (Explanation):
+      - 架构设计: explanation/architecture.md
+      - 设计决策: explanation/design-decisions.md
+      - 工具执行管线: explanation/pipeline.md
+      - 记忆模型: explanation/memory-model.md
+      - 并发模型: explanation/concurrency.md
