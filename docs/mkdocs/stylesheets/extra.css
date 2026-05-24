@@ -1,0 +1,14 @@
+:root {
+  --md-primary-fg-color: #3949ab;
+  --md-accent-fg-color: #5c6bc0;
+}
+
+.md-typeset .grid.cards > :is(ul, ol) > li {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.5rem;
+}
+
+.md-typeset .grid.cards > :is(ul, ol) > li:hover {
+  border-color: var(--md-accent-fg-color);
+  box-shadow: 0 0 0.5rem rgba(0, 0, 0, 0.1);
+}

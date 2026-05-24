@@ -1,0 +1,117 @@
+site_name: llm-harness
+site_description: Production-grade reusable AI agent infrastructure base — build an agent in 25 lines
+site_author: H-Mr
+site_url: https://h-mr.github.io/llm-harness/
+repo_name: H-Mr/llm-harness
+repo_url: https://github.com/H-Mr/llm-harness
+edit_uri: edit/main/docs/mkdocs/
+docs_dir: docs/mkdocs
+
+copyright: MIT License — H-Mr
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.top
+    - navigation.indexes
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: true
+            show_root_heading: true
+            show_category_heading: true
+            members_order: source
+            separate_signature: true
+            docstring_style: google
+            show_signature_annotations: true
+            signature_crossrefs: true
+            line_length: 80
+            merge_init_into_class: true
+            show_submodules: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Core Concepts:
+      - Overview: core-concepts/overview.md
+      - Harness: core-concepts/harness.md
+      - Agent: core-concepts/agent.md
+      - Tools: core-concepts/tools.md
+      - Providers: core-concepts/providers.md
+      - Permissions: core-concepts/permissions.md
+      - Memory & Session: core-concepts/memory-session.md
+      - Observability: core-concepts/observability.md
+  - Architecture: architecture.md
+  - Deployment: deployment.md
+  - Examples: examples/index.md
+  - API Reference:
+      - Harness: api/harness.md
+      - Agent: api/agent.md
+      - Loop: api/loop.md
+      - Tools: api/tools.md
+      - Providers: api/providers.md
+      - Permissions: api/permissions.md
+      - Hooks: api/hooks.md
+      - Memory: api/memory.md
+      - Session: api/session.md
+      - Observability: api/observability.md
+      - Cron: api/cron.md
+      - Channels: api/channels.md
+      - MCP: api/mcp.md
+      - Context: api/context.md
+      - Config: api/config.md
