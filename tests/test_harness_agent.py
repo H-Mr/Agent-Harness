@@ -8,15 +8,18 @@ from typing import Any, ClassVar
 import pytest
 from pydantic import BaseModel
 
-from agent_harness.config.schema import ToolsConfig
+from agent_harness.config.schema import Config, ToolsConfig
 from agent_harness.context.base import ContextBuilder, SectionProvider
 from agent_harness.harness import Harness
 from agent_harness.hooks.loader import HookRegistry
 from agent_harness.memory.store import MemoryStore
 from agent_harness.observability.tracker import Tracker
-from agent_harness.permissions.checker import PermissionChecker
+from agent_harness.permissions.checker import PermissionChecker, PermissionDecision
 from agent_harness.permissions.modes import PermissionMode
 from agent_harness.permissions.settings import PermissionSettings
+from agent_harness.bus.events import InboundMessage
+from unittest.mock import patch
+
 from agent_harness.providers.base import LLMProvider, LLMResponse
 from agent_harness.session.manager import SessionManager
 from agent_harness.skills.registry import SkillRegistry
@@ -343,3 +346,106 @@ class TestHarnessCreation:
         """tracker=None should disable tracking."""
         harness = Harness(provider=MockProvider(), tracker=None)
         assert harness.tracker is None
+
+
+# ---------------------------------------------------------------------------
+# Harness callback tests
+# ---------------------------------------------------------------------------
+
+
+class TestHarnessCallbacks:
+    """Tests for Harness pipeline callbacks."""
+
+    async def test_default_tool_check_delegates_to_permissions(self) -> None:
+        """Default mode allows read-only tools."""
+        harness = Harness(provider=MockProvider())
+        tool = EchoTool()
+        decision = await harness.on_tool_check("echo", tool, EchoInput(text="test"))
+        assert isinstance(decision, PermissionDecision)
+        # Default mode allows read-only tools
+        assert decision.allowed is True
+
+    async def test_custom_tool_check_overrides_default(self) -> None:
+        """Custom callback replaces default."""
+        async def custom_check(
+            name: str, tool: BaseTool, parsed_args: Any,
+        ) -> PermissionDecision:
+            return PermissionDecision(allowed=False, reason="blocked by custom")
+
+        harness = Harness(provider=MockProvider(), on_tool_check=custom_check)
+        tool = EchoTool()
+        decision = await harness.on_tool_check("echo", tool, EchoInput(text="test"))
+        assert decision.allowed is False
+        assert "custom" in decision.reason
+
+    async def test_default_build_context(self) -> None:
+        """Builds system prompt + history + user message."""
+        harness = Harness(
+            provider=MockProvider(),
+            context=[_make_provider("test", "System prompt content")],
+        )
+        msg = InboundMessage(
+            channel="cli",
+            sender_id="user",
+            chat_id="test-chat",
+            content="Hello world",
+        )
+        messages = await harness.on_build_context(msg, [])
+        assert isinstance(messages, list)
+        assert len(messages) >= 2
+        assert messages[0]["role"] == "system"
+        assert "System prompt content" in messages[0]["content"]
+        assert messages[-1]["role"] == "user"
+        assert "Hello world" in messages[-1]["content"]
+
+    async def test_default_on_error(self) -> None:
+        """Returns user-facing error string."""
+        harness = Harness(provider=MockProvider())
+        result = await harness.on_error(ValueError("test error"), "test_context")
+        assert result == "Sorry, I encountered an error processing your request."
+
+    async def test_custom_on_error(self) -> None:
+        """Custom callback overrides default."""
+        async def custom_error(exc: Exception, ctx: str) -> str | None:
+            return f"Custom error handler: {exc}"
+
+        harness = Harness(provider=MockProvider(), on_error=custom_error)
+        result = await harness.on_error(ValueError("something broke"), "ctx")
+        assert result == "Custom error handler: something broke"
+
+
+# ---------------------------------------------------------------------------
+# Harness from_config tests
+# ---------------------------------------------------------------------------
+
+
+class TestHarnessFromConfig:
+    """Tests for Harness.from_config factory."""
+
+    def test_from_config_with_minimal_config(self, tmp_path: Path) -> None:
+        """Creates a working Harness from a minimal Config with MockProvider."""
+        config = Config()
+        config.agent.workspace = str(tmp_path)
+        with patch(
+            "agent_harness.harness.Harness._provider_from_config",
+            return_value=MockProvider(),
+        ):
+            harness = Harness.from_config(config)
+
+        assert isinstance(harness, Harness)
+        assert isinstance(harness.provider, MockProvider)
+        assert isinstance(harness.tools, ToolRegistry)
+        assert len(harness.tools) > 0  # default ToolsConfig enables all tools
+        assert isinstance(harness.permissions, PermissionChecker)
+        assert isinstance(harness.memory, MemoryStore)
+        assert isinstance(harness.sessions, SessionManager)
+        assert harness.tracker is None
+        assert harness.context_window_tokens == 64_000
+        assert harness.max_completion_tokens == 8192
+
+    def test_from_config_raises_on_unknown_provider(self) -> None:
+        """Raises ValueError when provider cannot be resolved."""
+        config = Config()
+        config.agent.provider = "nonexistent_provider"
+        with pytest.raises(ValueError, match="Unknown provider"):
+            Harness.from_config(config)
