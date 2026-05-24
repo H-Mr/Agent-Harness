@@ -24,6 +24,10 @@ from agent_harness.tools.task_output_tool import TaskOutputTool, TaskOutputToolI
 from agent_harness.tools.task_stop_tool import TaskStopTool, TaskStopToolInput
 from agent_harness.tools.task_update_tool import TaskUpdateTool, TaskUpdateToolInput
 from agent_harness.tools.web import WebFetchInput, WebFetchTool, WebSearchInput, WebSearchTool
+from agent_harness.tools.cron_create_tool import CronCreateInput, CronCreateTool
+from agent_harness.tools.cron_delete_tool import CronDeleteInput, CronDeleteTool
+from agent_harness.tools.cron_list_tool import CronListInput, CronListTool
+from agent_harness.tools.cron_toggle_tool import CronToggleInput, CronToggleTool
 
 __all__ = [
     # Base
@@ -65,6 +69,15 @@ __all__ = [
     "MemoryWriteInput",
     "MemoryReadTool",
     "MemoryReadInput",
+    # Cron
+    "CronCreateTool",
+    "CronCreateInput",
+    "CronDeleteTool",
+    "CronDeleteInput",
+    "CronListTool",
+    "CronListInput",
+    "CronToggleTool",
+    "CronToggleInput",
     # Tasks
     "TaskCreateTool",
     "TaskCreateToolInput",

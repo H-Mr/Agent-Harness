@@ -70,6 +70,10 @@ def _register_all() -> None:
         "read_memory":   lambda ws, cfg: MemoryReadTool(None),
         "spawn":         lambda ws, cfg: None,  # requires SubagentManager — app registers
         "ask_user_question": lambda ws, cfg: None,  # requires callback — app registers
+        "cron_create":      lambda ws, cfg: None,  # requires CronService — app registers
+        "cron_delete":      lambda ws, cfg: None,  # requires CronService — app registers
+        "cron_list":        lambda ws, cfg: None,  # requires CronService — app registers
+        "cron_toggle":      lambda ws, cfg: None,  # requires CronService — app registers
         "todo_write":    _no_args(lambda: __import__("agent_harness.tools.todo_write_tool", fromlist=["TodoWriteTool"]).TodoWriteTool()),
         "tool_search":   _no_args(lambda: __import__("agent_harness.tools.tool_search_tool", fromlist=["ToolSearchTool"]).ToolSearchTool()),
         "skill":         _no_args(lambda: __import__("agent_harness.tools.skill_tool", fromlist=["SkillTool"]).SkillTool()),
