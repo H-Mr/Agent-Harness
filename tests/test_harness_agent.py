@@ -20,7 +20,8 @@ from agent_harness.permissions.settings import PermissionSettings
 from agent_harness.bus.events import InboundMessage
 from unittest.mock import patch
 
-from agent_harness.providers.base import LLMProvider, LLMResponse
+from agent_harness.providers.base import LLMProvider, LLMResponse, ToolCallRequest
+from agent_harness.agent import Agent
 from agent_harness.session.manager import SessionManager
 from agent_harness.skills.registry import SkillRegistry
 from agent_harness.tools.base import BaseTool, ToolExecutionContext, ToolRegistry, ToolResult
@@ -34,9 +35,15 @@ from agent_harness.tools.base import BaseTool, ToolExecutionContext, ToolRegistr
 class MockProvider(LLMProvider):
     """Provider that returns scripted responses."""
 
-    def __init__(self, response_text: str = "Mock response") -> None:
+    def __init__(
+        self,
+        response_text: str = "Mock response",
+        responses: list[LLMResponse] | None = None,
+    ) -> None:
         super().__init__()
         self.response_text = response_text
+        self._responses = responses
+        self.call_count = 0
 
     async def chat(
         self,
@@ -48,6 +55,12 @@ class MockProvider(LLMProvider):
         reasoning_effort: str | None = None,
         tool_choice: str | dict[str, Any] | None = None,
     ) -> LLMResponse:
+        if self._responses is not None:
+            response = self._responses[
+                self.call_count % len(self._responses)
+            ]
+            self.call_count += 1
+            return response
         return LLMResponse(content=self.response_text)
 
     def get_default_model(self) -> str:
@@ -79,6 +92,35 @@ class EchoTool(BaseTool):
 
     def is_read_only(self, arguments: BaseModel) -> bool:
         return True
+
+
+class MutatingInput(BaseModel):
+    """Input model for a mutating (non-read-only) tool."""
+
+    message: str
+
+
+class MutatingTool(BaseTool):
+    """Tool that is NOT read-only — useful for permission tests."""
+
+    name: ClassVar[str] = "mutate"
+    description: ClassVar[str] = "Mutates state (not read-only)"
+    input_model: ClassVar[type[BaseModel]] = MutatingInput
+
+    async def execute(
+        self, arguments: MutatingInput, context: ToolExecutionContext
+    ) -> ToolResult:
+        return ToolResult(output=f"Mutated: {arguments.message}")
+
+    def is_read_only(self, arguments: BaseModel) -> bool:
+        return False
+
+
+class FailingProvider(MockProvider):
+    """Provider that raises ValueError during chat_with_retry."""
+
+    async def chat_with_retry(self, **kwargs: Any) -> LLMResponse:
+        raise ValueError("LLM API call failed")
 
 
 # ---------------------------------------------------------------------------
@@ -449,3 +491,249 @@ class TestHarnessFromConfig:
         config.agent.provider = "nonexistent_provider"
         with pytest.raises(ValueError, match="Unknown provider"):
             Harness.from_config(config)
+
+
+# ---------------------------------------------------------------------------
+# Agent process() tests
+# ---------------------------------------------------------------------------
+
+
+class TestAgentProcess:
+    """Tests for Agent.process() pipeline."""
+
+    async def test_process_text_only(self) -> None:
+        """Simple text response — no tools, no session, no memory."""
+        harness = Harness(
+            provider=MockProvider(
+                responses=[LLMResponse(content="Hello!")]
+            ),
+            context=[_make_provider("identity", "You are a helpful assistant.")],
+        )
+        agent = Agent(harness)
+        msg = InboundMessage(
+            channel="cli", sender_id="u1", chat_id="c1", content="hi"
+        )
+        result = await agent.process(msg)
+        assert result is not None
+        assert result.content == "Hello!"
+        assert result.channel == "cli"
+
+    async def test_process_with_tool_call(self) -> None:
+        """LLM calls a tool, then responds."""
+        harness = Harness(
+            provider=MockProvider(
+                responses=[
+                    LLMResponse(
+                        content=None,
+                        tool_calls=[
+                            ToolCallRequest(
+                                id="c1",
+                                name="echo",
+                                arguments={"text": "ping"},
+                            )
+                        ],
+                    ),
+                    LLMResponse(content="Tool said: ping"),
+                ],
+            ),
+        )
+        # Register EchoTool manually AFTER creating the harness
+        harness.tools.register(EchoTool())
+        agent = Agent(harness)
+
+        msg = InboundMessage(
+            channel="cli", sender_id="u1", chat_id="c1", content="say ping"
+        )
+        result = await agent.process(msg)
+        assert result is not None
+        assert "ping" in result.content
+
+    async def test_process_with_session_persistence(self, tmp_path: Path) -> None:
+        """With sessions configured, messages are persisted between turns."""
+        session_dir = tmp_path / "sessions"
+        provider = MockProvider(
+            responses=[LLMResponse(content="First reply")]
+        )
+        harness = Harness(provider=provider, sessions=session_dir)
+        agent = Agent(harness)
+
+        msg1 = InboundMessage(
+            channel="cli", sender_id="u1", chat_id="c1", content="hello"
+        )
+        result1 = await agent.process(msg1)
+        assert result1 is not None
+        assert result1.content == "First reply"
+
+        # Verify session has messages after first turn
+        session = harness.sessions.get_or_create("cli:c1")
+        assert len(session.messages) == 2
+        assert session.messages[0]["role"] == "user"
+        assert "hello" in session.messages[0]["content"]
+        assert session.messages[1]["role"] == "assistant"
+
+        # Second turn
+        provider._responses = [LLMResponse(content="Second reply")]
+        provider.call_count = 0
+
+        msg2 = InboundMessage(
+            channel="cli", sender_id="u1", chat_id="c1", content="again"
+        )
+        result2 = await agent.process(msg2)
+        assert result2 is not None
+        assert result2.content == "Second reply"
+
+        # Session now has four messages
+        assert len(session.messages) == 4
+        assert session.messages[2]["role"] == "user"
+        assert "again" in session.messages[2]["content"]
+        assert session.messages[3]["role"] == "assistant"
+        assert session.messages[3]["content"] == "Second reply"
+
+    async def test_process_permission_denies_tool(self) -> None:
+        """Plan mode blocks mutating tools."""
+        harness = Harness(
+            provider=MockProvider(
+                responses=[
+                    LLMResponse(
+                        content=None,
+                        tool_calls=[
+                            ToolCallRequest(
+                                id="c1",
+                                name="mutate",
+                                arguments={"message": "change"},
+                            )
+                        ],
+                    ),
+                    LLMResponse(content="Cannot mutate in plan mode."),
+                ],
+            ),
+            permissions="plan",
+        )
+        harness.tools.register(MutatingTool())
+        agent = Agent(harness)
+
+        msg = InboundMessage(
+            channel="cli",
+            sender_id="u1",
+            chat_id="c1",
+            content="change something",
+        )
+        result = await agent.process(msg)
+        assert result is not None
+        # The tool was blocked and the LLM handled it gracefully
+        assert "Cannot mutate in plan mode" in result.content
+
+    async def test_process_tool_not_found(self) -> None:
+        """LLM calls a non-existent tool — error returned."""
+        harness = Harness(
+            provider=MockProvider(
+                responses=[
+                    LLMResponse(
+                        content=None,
+                        tool_calls=[
+                            ToolCallRequest(
+                                id="c1",
+                                name="nonexistent",
+                                arguments={},
+                            )
+                        ],
+                    ),
+                    LLMResponse(content="Tool not found."),
+                ],
+            ),
+        )
+        agent = Agent(harness)
+
+        msg = InboundMessage(
+            channel="cli",
+            sender_id="u1",
+            chat_id="c1",
+            content="do something",
+        )
+        result = await agent.process(msg)
+        assert result is not None
+        assert "Tool not found" in result.content
+
+    async def test_process_error_recovery(self) -> None:
+        """Custom on_error handles exceptions gracefully."""
+        async def custom_on_error(exc: Exception, ctx: str) -> str | None:
+            return f"Recovered from error: {exc}"
+
+        harness = Harness(
+            provider=FailingProvider(),
+            on_error=custom_on_error,
+        )
+        agent = Agent(harness)
+
+        msg = InboundMessage(
+            channel="cli", sender_id="u1", chat_id="c1", content="hi"
+        )
+        result = await agent.process(msg)
+        assert result is not None
+        assert "Recovered from error" in result.content
+        assert "LLM API call failed" in result.content
+
+    async def test_process_different_sessions_isolated(self, tmp_path: Path) -> None:
+        """Different session keys have isolated history."""
+        session_dir = tmp_path / "sessions"
+        harness = Harness(
+            provider=MockProvider(
+                responses=[LLMResponse(content="Reply")]
+            ),
+            sessions=session_dir,
+        )
+        agent = Agent(harness)
+
+        msg1 = InboundMessage(
+            channel="cli", sender_id="u1", chat_id="c1", content="hello"
+        )
+        result1 = await agent.process(msg1)
+        assert result1 is not None
+
+        msg2 = InboundMessage(
+            channel="cli", sender_id="u2", chat_id="c2", content="secret"
+        )
+        result2 = await agent.process(msg2)
+        assert result2 is not None
+
+        session1 = harness.sessions.get_or_create("cli:c1")
+        session2 = harness.sessions.get_or_create("cli:c2")
+        assert session1 is not session2
+
+        # Each session should contain only its own user message
+        user_msgs_1 = [m for m in session1.messages if m["role"] == "user"]
+        user_msgs_2 = [m for m in session2.messages if m["role"] == "user"]
+        assert any("hello" in m["content"] for m in user_msgs_1)
+        assert any("secret" in m["content"] for m in user_msgs_2)
+        assert not any("hello" in m["content"] for m in user_msgs_2)
+
+    async def test_process_without_sessions(self) -> None:
+        """Without sessions, process() still works — stateless."""
+        harness = Harness(
+            provider=MockProvider(
+                responses=[LLMResponse(content="Stateless OK")]
+            ),
+        )
+        agent = Agent(harness)
+
+        msg = InboundMessage(
+            channel="cli", sender_id="u1", chat_id="c1", content="hi"
+        )
+        result = await agent.process(msg)
+        assert result is not None
+        assert result.content == "Stateless OK"
+
+    async def test_process_null_response(self) -> None:
+        """When LLM returns None content, process returns None."""
+        harness = Harness(
+            provider=MockProvider(
+                responses=[LLMResponse(content=None)]
+            ),
+        )
+        agent = Agent(harness)
+
+        msg = InboundMessage(
+            channel="cli", sender_id="u1", chat_id="c1", content="hi"
+        )
+        result = await agent.process(msg)
+        assert result is None
