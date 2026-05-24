@@ -134,6 +134,8 @@ def _load_hooks_from_path(path: str | Path) -> HookRegistry:
     """
     import json
 
+    from pydantic import ValidationError
+
     from agent_harness.hooks.events import HookEvent
     from agent_harness.hooks.schemas import HookDefinition
 
@@ -166,7 +168,11 @@ def _load_hooks_from_path(path: str | Path) -> HookRegistry:
             continue
         for hook_data in hooks_list:
             if isinstance(hook_data, dict):
-                hook = HookDefinition(**hook_data)
+                try:
+                    hook = HookDefinition(**hook_data)
+                except ValidationError as exc:
+                    log.warning("Invalid hook definition %r: %s", hook_data, exc)
+                    continue
                 registry.register(event, hook)
     return registry
 
@@ -226,8 +232,8 @@ class Harness:
         self.workspace = workspace
         self.tools = self._resolve_tools(tools)
         self.permissions = self._resolve_permissions(permissions)
-        self.memory = self._resolve_memory(memory, workspace)
-        self.sessions = self._resolve_sessions(sessions, workspace)
+        self.memory = self._resolve_memory(memory)
+        self.sessions = self._resolve_sessions(sessions)
         self.context = self._resolve_context(context)
         self.skills = self._resolve_skills(skills)
         self.hooks = self._resolve_hooks(hooks)
@@ -296,7 +302,6 @@ class Harness:
     @staticmethod
     def _resolve_memory(
         memory: MemoryStore | str | Path | None,
-        workspace: Path,
     ) -> MemoryStore | None:
         """Resolve *memory* to a ``MemoryStore`` instance, or ``None``."""
         if memory is None:
@@ -310,7 +315,6 @@ class Harness:
     @staticmethod
     def _resolve_sessions(
         sessions: SessionManager | str | Path | None,
-        workspace: Path,
     ) -> SessionManager | None:
         """Resolve *sessions* to a ``SessionManager`` instance, or ``None``."""
         if sessions is None:
@@ -414,9 +418,15 @@ class Harness:
 
     def _auto_inject_skills(self) -> None:
         """Add a ``SkillsSection`` to the context builder when skills are configured."""
-        if self.skills is not None and self.skills.list_skills():
-            section = SkillsSection(self.skills)
-            self.context.add_provider(section)
+        if self.skills is not None:
+            try:
+                has_skills = self.skills.list_skills()
+            except AttributeError:
+                log.warning("Skills object has no list_skills() method, skipping auto-inject")
+                has_skills = False
+            if has_skills:
+                section = SkillsSection(self.skills)
+                self.context.add_provider(section)
 
     # ------------------------------------------------------------------
     # Factory: from_config
@@ -451,6 +461,11 @@ class Harness:
 
         # Resolve provider --------------------------------------------------
         provider = cls._provider_from_config(config)
+        if provider is None:
+            raise ValueError(
+                f"Cannot create Harness: unable to resolve LLM provider for model={config.agent.model!r}. "
+                f"Set agent.provider explicitly in config, or install the required provider SDK."
+            )
 
         # Resolve tools -----------------------------------------------------
         tools = build_tools_from_config(
@@ -496,12 +511,15 @@ class Harness:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _provider_from_config(config: Config) -> LLMProvider | None:
-        """Resolve an ``LLMProvider`` from *config*, or return ``None``.
+    def _provider_from_config(config: Config) -> LLMProvider:
+        """Resolve an ``LLMProvider`` from *config*.
 
         Uses the ``ProviderSpec`` machinery in the provider registry to
         auto-detect the correct provider when ``config.agent.provider``
         is ``"auto"``.
+
+        Raises:
+            ValueError: If the provider cannot be resolved or instantiated.
         """
         provider_name = config.agent.provider
         model = config.agent.model
@@ -513,7 +531,10 @@ class Harness:
             spec = find_by_name(provider_name)
             if spec is None:
                 log.warning("Unknown provider %r in config, cannot create provider", provider_name)
-                return None
+                raise ValueError(
+                    f"Unknown provider {provider_name!r} in config. "
+                    f"Available: anthropic, openai_compat, azure_openai"
+                )
         else:
             spec = detect_provider(model, api_key=api_key, api_base=api_base)
             if spec is None:
@@ -522,7 +543,10 @@ class Harness:
                     model,
                     api_base,
                 )
-                return None
+                raise ValueError(
+                    f"Could not auto-detect provider for model={model!r} with api_base={api_base!r}. "
+                    f"Set agent.provider explicitly in config, or install the required provider SDK."
+                )
 
         # Instantiate -------------------------------------------------------
         # Provider implementations are optional dependencies — catch ImportError
@@ -549,7 +573,10 @@ class Harness:
                 log.warning(
                     "Unsupported provider backend: %s (spec=%s)", spec.backend, spec.name
                 )
-                return None
+                raise ValueError(
+                    f"Unsupported provider backend: {spec.backend} (spec={spec.name}). "
+                    f"Supported backends: anthropic, openai_compat, azure_openai"
+                )
         except ImportError as exc:
             log.warning(
                 "Could not instantiate provider %r (backend=%s): missing optional dependency: %s",
@@ -557,4 +584,7 @@ class Harness:
                 spec.backend,
                 exc,
             )
-            return None
+            raise ValueError(
+                f"Could not instantiate provider {spec.name!r} (backend={spec.backend}): "
+                f"missing optional dependency: {exc}"
+            )
