@@ -2,29 +2,30 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/llm-harness)](https://pypi.org/project/llm-harness/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-290%20passed-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-337%20passed-brightgreen)]()
+[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)]()
 
 **[中文介绍](docs/INTRO.md#中文版) · [English Introduction](docs/INTRO.md) · [GitHub](https://github.com/H-Mr/llm-harness)**
 
-**Production-grade reusable agent infrastructure base — ~10,000 lines, 290 tests.**
+**Production-grade reusable agent infrastructure base — ~13,000 lines, 337 tests.**
 
-Build an AI agent by defining your tools, writing your skills, and choosing a provider. Everything else — ReAct loop, tool pipeline, permissions, hooks, session persistence, memory consolidation, observability — is handled by the harness.
+Build an AI agent by dropping in a provider, tools, and context. Everything else — ReAct loop, tool pipeline, permissions, hooks, session persistence, memory consolidation, observability — is handled by the harness.
 
 ```python
-from agent_harness import AgentLoop, LoopCallbacks, ToolRegistry, AnthropicProvider
+from agent_harness import Agent, Harness, OpenAICompatProvider
+from agent_harness.prompts.sections import IdentitySection
 
-tools = ToolRegistry()
-tools.register(MyBusinessTool())
-
-callbacks = LoopCallbacks(
-    build_messages=...,               # your system prompt
-    execute_tool=...,                 # your tool execution
-    get_tool_definitions=lambda: tools.to_api_schema("anthropic"),
+agent = Agent(
+    Harness(
+        provider=OpenAICompatProvider(api_key="...", api_base="..."),
+        tools=["read_file", "write_file", "exec", "web_search"],
+        context=[IdentitySection("You are a helpful assistant.")],
+    ),
+    model="gpt-4",
 )
 
-agent = AgentLoop(AnthropicProvider(api_key="..."), callbacks)
-result = await agent.process_direct("Do the thing")
-print(result.final_content)
+result = await agent.process(InboundMessage(channel="cli", sender_id="user", chat_id="c1", content="Do the thing"))
+print(result.content)
 ```
 
 ## Why This Exists
@@ -33,7 +34,8 @@ print(result.final_content)
 |--------|---------|
 | **LangChain/LangGraph** | 300K+ lines, 50+ dependencies, constant API churn |
 | **From scratch** | Rebuild loop, retry, registry, session, permissions... every time |
-| **llm-harness** | ~10K lines. Read in an afternoon. Fork without fear. 290 tests |
+| **llm-harness** | ~13K lines. Read in an afternoon. Fork without fear. 337 tests |
+| **llm-harness (v0.2)** | + Harness/Agent: 25 lines to a running agent |
 
 ## Architecture
 
@@ -50,19 +52,21 @@ Every event flows through:
 
 ```
 llm-harness/
+  harness.py        Harness — infrastructure container + from_config()
+  agent.py          Agent — single process(msg) entry point
   loop/             ReAct skeleton + concurrency (per-session Lock + Semaphore)
-  tools/            24 built-in tools + config-driven builder
+  tools/            28 built-in tools + config-driven builder
   providers/        Anthropic + OpenAI-compatible (25 backends), retry + backoff
   permissions/      Sensitive path protection, 3 modes, path/cmd rules
   hooks/            PreToolUse/PostToolUse, 4 hook types (cmd/http/prompt/agent)
   security/         SSRF protection (DNS + private IP blocking)
-  sandbox/          OS-level isolation (srt CLI wrapper)
+  sandbox/          OS-level isolation (srt CLI wrapper), built into ExecTool
   session/          JSONL persistence + legal boundary alignment
   memory/           Two-tier (MEMORY.md + HISTORY.md) + LLM consolidation
   skills/           .md loading + dependency checking
-  cron/             Scheduler (at/every/cron) + persistence
+  cron/             Scheduler (at/every/cron) + management tools
+  channels/         BaseChannel ABC + WeChat + Feishu implementations
   mcp/              MCP stdio/SSE/HTTP, tools as BaseTool subclasses
-  channels/         BaseChannel ABC + ChannelManager (WebSocket, Telegram...)
   commands/         4-tier slash command router
   plugins/          Discovery + manifest loading
   auth/             Credential storage (file + keyring + encryption)
@@ -82,32 +86,37 @@ pip install llm-harness[all]
 
 ```python
 import asyncio
-from pathlib import Path
-from agent_harness import (
-    AgentLoop, LoopCallbacks, ToolRegistry, BaseTool,
-    ToolResult, ToolExecutionContext, AnthropicProvider,
-)
-from pydantic import BaseModel, Field
+from agent_harness import Agent, Harness, OpenAICompatProvider
+from agent_harness.bus.events import InboundMessage
+from agent_harness.prompts.sections import IdentitySection
 
-class GreetInput(BaseModel):
-    name: str = Field(description="Who to greet")
+async def main():
+    agent = Agent(
+        Harness(
+            provider=OpenAICompatProvider(
+                api_key="sk-...", api_base="https://api.openai.com/v1"
+            ),
+            tools=["read_file", "write_file", "exec"],
+            context=[IdentitySection("You are a friendly assistant.")],
+        ),
+        model="gpt-4",
+    )
 
-class GreetTool(BaseTool):
-    name = "greet"
-    description = "Greet someone"
-    input_model = GreetInput
+    result = await agent.process(
+        InboundMessage(channel="cli", sender_id="user", chat_id="c1", content="Hello!")
+    )
+    print(result.content)
 
-    async def execute(self, args, ctx):
-        return ToolResult(output=f"Hello, {args.name}!")
+asyncio.run(main())
+```
+
+### Low-Level API (full control)
+
+```python
+from agent_harness import AgentLoop, LoopCallbacks, ToolRegistry, AnthropicProvider
 
 tools = ToolRegistry()
-tools.register(GreetTool())
-
-async def _exec(tools, name, args):
-    tool = tools.get(name)
-    parsed = tool.input_model.model_validate(args)
-    result = await tool.execute(parsed, ToolExecutionContext(cwd=Path.cwd()))
-    return result.output
+tools.register(MyBusinessTool())
 
 callbacks = LoopCallbacks(
     build_messages=lambda msg: [
@@ -116,23 +125,18 @@ callbacks = LoopCallbacks(
     ],
     execute_tool=lambda name, args: _exec(tools, name, args),
     get_tool_definitions=lambda: tools.to_api_schema("anthropic"),
-    on_event=lambda e: print(f"[{type(e).__name__}]"),  # optional observability
 )
 
-agent = AgentLoop(AnthropicProvider(api_key="..."), callbacks)
-
-async def main():
-    result = await agent.process_direct("Greet Alice!")
-    print(result.final_content)
-
-asyncio.run(main())
+loop = AgentLoop(AnthropicProvider(api_key="..."), callbacks)
+result = await loop.process_direct("Hello!")
+print(result.final_content)
 ```
 
 ### Config-Driven Setup
 
 ```json
 {
-  "agent": { "model": "claude-sonnet-4-6" },
+  "agent": { "model": "claude-sonnet-4-6", "provider": "anthropic" },
   "tools": { "enabled": ["web_search", "message", "write_memory"] },
   "permission": { "mode": "default" },
   "observability": { "track_file": "~/.llm-harness/track.jsonl" }
@@ -140,11 +144,11 @@ asyncio.run(main())
 ```
 
 ```python
-from agent_harness import load_config, build_tools_from_config, start_tracker_from_config
+from agent_harness import Agent, Harness, load_config
 
-config = load_config()
-tools = build_tools_from_config(config.tools)
-tracker = await start_tracker_from_config(config)  # auto-starts if configured
+config = load_config("config.json")
+agent = Agent(Harness.from_config(config))
+result = await agent.process(InboundMessage(channel="cli", content="Search for latest AI news"))
 ```
 
 ## Observability
@@ -218,22 +222,24 @@ Optional: `anthropic`, `openai`, `ddgs`, `readability-lxml`
 ## Tests
 
 ```
-290 passed, 9 skipped, 0 failed
+337 passed, 9 skipped, 0 failed
 ```
 
 9 skipped are optional dependency tests (ddgs, readability-lxml). Install those packages to enable them.
 
 ## Design Principles
 
-1. **Callback injection, not inheritance.** `LoopCallbacks` dataclass holds all app-specific behavior. The loop knows nothing about your tools, channels, or prompts.
+1. **Harness + LLM = Agent.** Harness handles everything that isn't LLM inference. Agent is `process(msg)` — one method for all channels.
 
-2. **Config-driven.** Switch agent behavior via JSON. Tools, permissions, provider, sandbox, observability — all configurable without code changes.
+2. **Callback injection, not inheritance.** Every behavior is injected. The loop knows nothing about your tools, channels, or prompts.
 
-3. **Transport-agnostic.** `BaseChannel` defines the contract. WebSocket, HTTP, gRPC, Telegram — same interface.
+3. **Config-driven.** Switch agent behavior via JSON. Tools, permissions, provider, sandbox, observability — all configurable without code changes.
 
-4. **You own the code.** ~10,000 lines. Fork it. Modify it. No framework to learn.
+4. **Transport-agnostic.** `BaseChannel` defines the contract. CLI, HTTP, WebSocket, WeChat, Feishu — same interface.
 
-5. **Production observability.** Structured events, EventBus, JSONL tracker, auto-start from config. Zero overhead when disabled.
+5. **You own the code.** ~13,000 lines. Fork it. Modify it. No framework to learn.
+
+6. **Production observability.** Structured events, EventBus, JSONL tracker, auto-start from config. Zero overhead when disabled.
 
 ## License
 
