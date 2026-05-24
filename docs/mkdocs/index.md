@@ -1,95 +1,78 @@
 # llm-harness
 
-**Production-grade reusable AI agent infrastructure. Build an agent in 25 lines.**
+**生产级可复用的 AI 智能体基础设施。**
 
 ```
 Harness + LLM = Agent
 ```
 
-llm-harness is the infrastructure layer between your LLM and your business logic — the plumbing every agent needs but nobody wants to write. ~13,000 lines of Python, 337 tests, MIT license.
+llm-harness 是连接 LLM 与业务逻辑的基础设施层 — 每个智能体都需要的管道工程，但没人愿意从头编写。约 13,000 行 Python，337 项测试，MIT 开源协议。
 
 <div class="grid cards" markdown>
 
--   **25 Lines to Agent**
+-   **25 行代码构建智能体**
 
     ---
 
-    Harness handles tools, permissions, memory, sessions, and observability. `Agent(Harness(...), model="gpt-4o").process(msg)` is all you need.
+    Harness 帮你处理好工具、权限、记忆、会话和可观测性。`Agent(Harness(...), model="gpt-4o").process(msg)` 即可启动。
 
--   **28 Built-in Tools**
-
-    ---
-
-    File I/O, shell execution, web search, glob/grep, notebook editing, cron jobs. Config-driven — enable with `["*"]`.
-
--   **Defense in Depth**
+-   **28 个内置工具**
 
     ---
 
-    SSRF protection, sensitive path blocking, 3 permission modes, Pre/Post tool hooks, OS-level sandbox via `srt`.
+    文件 I/O、Shell 执行、Web 搜索、Glob/Grep、Notebook 编辑、定时任务。配置驱动 — 用 `["*"]` 一键启用全部。
 
--   **Observability First**
+-   **纵深防御**
 
     ---
 
-    17 structured event types, async EventBus, JSONL tracker. Auto-start from config. Zero overhead when disabled.
+    SSRF 防护、敏感路径拦截、3 种权限模式、Pre/Post 工具钩子、基于 `srt` 的 OS 级沙箱。
+
+-   **可观测性优先**
+
+    ---
+
+    17 种结构化事件类型、异步 EventBus、JSONL 追踪器。配置即自动启用，关闭时零开销。
 
 </div>
 
 ---
 
-## 25 Lines to an Agent
+## 为什么选择 llm-harness？
 
-```python
-import asyncio
-from agent_harness import Agent, Harness, OpenAICompatProvider
-from agent_harness.bus.events import InboundMessage
-from agent_harness.prompts.sections import IdentitySection
-
-async def main():
-    agent = Agent(
-        Harness(
-            provider=OpenAICompatProvider(
-                api_key="sk-...", api_base="https://api.openai.com/v1"
-            ),
-            tools=["read_file", "write_file", "exec", "web_search"],
-            context=[IdentitySection("You are a helpful assistant.")],
-        ),
-        model="gpt-4o",
-    )
-
-    result = await agent.process(
-        InboundMessage(channel="cli", sender_id="user", chat_id="c1", content="Hello!")
-    )
-    print(result.content)
-
-asyncio.run(main())
-```
-
-!!! tip "No boilerplate"
-    Those 25 lines include session management, memory consolidation, permission checks, tool execution, retry logic, and error handling. No additional wiring needed.
+| 方案 | 代价 |
+|------|------|
+| **LangChain / LangGraph** | 30 万+ 行代码，50+ 依赖，API 频繁变更，学习成本数周 |
+| **从零自建** | 2–4 周重新实现交互循环、重试、注册表、会话、权限、钩子 |
+| **llm-harness** | ~13,000 行。一个下午读完。放心 Fork。MIT 协议。 |
 
 ---
 
-## Why llm-harness?
+## 面向国内开发者
 
-| Option | Cost |
-|--------|------|
-| **LangChain / LangGraph** | 300K+ lines, 50+ dependencies, constant API churn, weeks to learn |
-| **From scratch** | 2–4 weeks rebuilding loop, retry, registry, session, permissions, hooks |
-| **llm-harness** | ~13,000 lines. Read in an afternoon. Fork without fear. MIT license. |
+llm-harness 通过 `OpenAICompatProvider` 原生兼容国内主流大模型平台，无需额外适配：
+
+| 平台 | 接入方式 |
+|------|----------|
+| **DeepSeek** | `OpenAICompatProvider(api_key="sk-...", api_base="https://api.deepseek.com/v1")` |
+| **阿里云百炼 (DashScope)** | `OpenAICompatProvider(api_key="sk-...", api_base="https://dashscope.aliyuncs.com/compatible-mode/v1")` |
+| **智谱 (Zhipu)** | `OpenAICompatProvider(api_key="sk-...", api_base="https://open.bigmodel.cn/api/paas/v4")` |
+| **硅基流动 (SiliconFlow)** | `OpenAICompatProvider(api_key="sk-...", api_base="https://api.siliconflow.cn/v1")` |
+| **火山引擎 (Volcengine)** | `OpenAICompatProvider(api_key="sk-...", api_base="https://ark.cn-beijing.volces.com/api/v3")` |
+
+只需修改 `api_base` 即可切换模型提供商，现有工具链、权限策略和可观测性系统完全复用，无需任何额外适配工作。
 
 ---
 
-## Architecture
+## 架构
 
-Every tool call flows through a pipeline you never wrote:
+每次工具调用都会流经一条你从未需要编写的管道：
 
 ```
 LLM → Permission.check → Hook.execute(PRE) → Tool.execute → Hook.execute(POST) → LLM
 ```
 
-Every message flows through an 8-step pipeline:
+每条消息流经 8 步处理管道：
 
 ```
 Session → Consolidation → Context → ReAct → Persist → OutboundMessage
@@ -111,40 +94,40 @@ Session → Consolidation → Context → ReAct → Persist → OutboundMessage
 
 ---
 
-## Quick Navigation
+## 快速导航
 
 <div class="grid cards" markdown>
 
--   :material-school-outline:{ .lg .middle } **Tutorials**
+-   :material-school-outline:{ .lg .middle } **教程**
 
     ---
 
-    Follow step-by-step to run your first agent in 5 minutes.
+    按照分步指南，在 5 分钟内运行你的第一个智能体。
 
-    [:octicons-arrow-right-24: Quick Start](tutorials/quick-start.md)
+    [:octicons-arrow-right-24: 快速入门](tutorials/quick-start.md){ .md-button }
 
--   :material-book-open-page-variant-outline:{ .lg .middle } **How-to Guides**
-
-    ---
-
-    Solve specific problems: deploy, add channels, schedule jobs, enable tracing.
-
-    [:octicons-arrow-right-24: Deploy to K8s](how-to/deploy-k8s.md)
-
--   :material-bookshelf:{ .lg .middle } **API Reference**
+-   :material-book-open-page-variant-outline:{ .lg .middle } **操作指南**
 
     ---
 
-    Complete module, class, and method reference. Auto-generated from source.
+    解决具体问题：部署、添加渠道、定时任务、启用链路追踪。
 
-    [:octicons-arrow-right-24: Harness API](api/harness.md)
+    [:octicons-arrow-right-24: 部署到 K8s](how-to/deploy-k8s.md){ .md-button }
 
--   :material-graph-outline:{ .lg .middle } **Explanation**
+-   :material-bookshelf:{ .lg .middle } **API 参考**
 
     ---
 
-    Understand design decisions, architecture, concurrency, and the memory model.
+    完整的模块、类和函数参考，从源码自动生成。
 
-    [:octicons-arrow-right-24: Architecture](explanation/architecture.md)
+    [:octicons-arrow-right-24: Harness API](api/harness.md){ .md-button }
+
+-   :material-graph-outline:{ .lg .middle } **原理说明**
+
+    ---
+
+    理解设计决策、架构、并发模型和记忆系统。
+
+    [:octicons-arrow-right-24: 架构设计](explanation/architecture.md){ .md-button }
 
 </div>

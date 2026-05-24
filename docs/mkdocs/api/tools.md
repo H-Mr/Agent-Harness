@@ -1,4 +1,6 @@
-# Tools API Reference
+# Tools — 工具系统
+
+工具基类与内置实现（文件系统、Shell、Web 等）。
 
 ::: agent_harness.tools.base
     options:

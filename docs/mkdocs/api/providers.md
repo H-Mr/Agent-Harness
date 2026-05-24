@@ -1,4 +1,6 @@
-# Providers API Reference
+# Providers — LLM 提供者抽象
+
+统一的 LLM 提供者接口，支持 Anthropic、OpenAI 兼容服务等。
 
 ::: agent_harness.providers.base
 

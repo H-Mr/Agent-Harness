@@ -1,4 +1,6 @@
-# Hooks API Reference
+# Hooks — 生命周期钩子
+
+钩子执行器与事件定义，支持 PreToolUse/PostToolUse 生命周期扩展。
 
 ::: agent_harness.hooks.executor
 

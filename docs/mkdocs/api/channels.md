@@ -1,4 +1,6 @@
-# Channels API Reference
+# Channels — 消息通道
+
+多平台消息通道适配器（微信、飞书等）与通道管理器。
 
 ::: agent_harness.channels.base
 

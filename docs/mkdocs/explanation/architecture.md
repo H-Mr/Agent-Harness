@@ -18,22 +18,13 @@ Harness + LLM = Agent
 
 ## 三层架构
 
-```
-┌──────────────────────────────────────────────────────┐
-│                   Agent Layer                        │
-│   Agent.process(msg) → OutboundMessage               │
-│   并发控制 · 会话管理 · 记忆合并 · 编排管线            │
-├──────────────────────────────────────────────────────┤
-│                   Harness Layer                      │
-│   消息管线 (Session→Consolidation→Context→ReAct→Persist)│
-│   工具管线 (Lookup→Validate→Permission→Execute)       │
-│   回调注入 · 管道连接 · 默认行为                       │
-├──────────────────────────────────────────────────────┤
-│                Parts Library (零件库)                  │
-│  tools │ providers │ permissions │ hooks              │
-│  session │ memory │ cron │ observability │ mcp        │
-│  channels │ commands │ plugins │ sandbox │ context    │
-└──────────────────────────────────────────────────────┘
+```mermaid
+block-beta
+  columns 1
+  block:agent["**Agent Layer**<br/>process(msg) → OutboundMessage<br/>并发控制 · 会话管理 · 记忆合并 · 编排管线"]
+  block:harness["**Harness Layer**<br/>消息管线: Session→Consolidation→Context→ReAct→Persist<br/>工具管线: Lookup→Validate→Permission→Execute<br/>回调注入 · 管道连接 · 默认行为"]
+  block:parts["**Parts Library** (零件库)<br/>tools · providers · permissions · hooks · session · memory<br/>cron · observability · mcp · channels · commands · plugins · sandbox"]
+  agent --> harness --> parts
 ```
 
 ### Agent Layer（代理层）
@@ -183,26 +174,27 @@ LLM 决定调用工具
 
 LLM Provider 使用经典的 **Template Method** 设计模式：
 
-```
-                      LLMProvider (ABC)
-                      ┌─────────────────────────┐
-                      │ chat()                   │  ← 抽象方法
-                      │ chat_stream()            │  ← 可重写（默认回退到非流式）
-                      │ get_default_model()      │  ← 抽象方法
-                      ├─────────────────────────┤
-                      │ chat_with_retry()        │  ← Template Method
-                      │ chat_stream_with_retry() │  ← Template Method
-                      └─────────────────────────┘
-                              ▲          ▲
-                             /            \
-                            /              \
-              ┌──────────────┐      ┌──────────────────┐
-              │ Anthropic    │      │ OpenAICompat      │
-              │ Provider     │      │ Provider          │
-              ├──────────────┤      ├──────────────────┤
-              │ Anthropic SDK│      │ OpenAI SDK /      │
-              │ 适配         │      │ 任意兼容 API 适配 │
-              └──────────────┘      └──────────────────┘
+```mermaid
+classDiagram
+    class LLMProvider {
+        <<abstract>>
+        +chat()* LLMResponse
+        +chat_stream() LLMResponse
+        +get_default_model()* str
+        +chat_with_retry() LLMResponse
+        +chat_stream_with_retry() LLMResponse
+    }
+    class AnthropicProvider {
+        +chat() LLMResponse
+        +get_default_model() str
+    }
+    class OpenAICompatProvider {
+        +chat() LLMResponse
+        +chat_stream() LLMResponse
+        +get_default_model() str
+    }
+    LLMProvider <|-- AnthropicProvider : extends
+    LLMProvider <|-- OpenAICompatProvider : extends
 ```
 
 为什么选择 Template Method 而非 Strategy 或 Adapter？
@@ -244,24 +236,11 @@ spec = detect_provider(model, api_key=key, api_base=base)
 
 观测系统是一个三层的 **Publish-Subscribe** 架构：
 
-```
-                  ┌──────────────────┐
-                  │    EventBus      │
-                  │  asyncio.Queue   │
-                  └──────┬─┬────────┘
-                         │ │
-            ┌────────────┘ └────────────┐
-            ▼                            ▼
-     ┌──────────┐              ┌─────────────────┐
-     │ Listener │              │   Tracker       │
-     │ (实时)   │              │  (磁盘持久化)    │
-     └──────────┘              └─────────────────┘
-                                    │
-                                    ▼
-                          ┌─────────────────┐
-                          │  track.jsonl    │
-                          │  JSON Lines     │
-                          └─────────────────┘
+```mermaid
+flowchart TD
+    EventBus["EventBus<br/>asyncio.Queue"] --> Listener["Listener<br/>(实时指标)"]
+    EventBus --> Tracker["Tracker<br/>(磁盘持久化)"]
+    Tracker --> File["track.jsonl<br/>JSON Lines"]
 ```
 
 **为什么需要三层？**
