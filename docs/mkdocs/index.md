@@ -79,12 +79,11 @@ Session → Consolidation → Context → ReAct → Persist → OutboundMessage
 ```
 
 ```mermaid
-block-beta
-  columns 1
-  block:agent["Agent.process(msg) → OutboundMessage"]
-  block:harness["Harness<br/>消息管线: Session→Memory→Context<br/>工具管线: Lookup→Validate→Execute"]
-  block:parts["零件库: tools · providers · permissions · hooks · session · memory · observability · cron · mcp · channels"]
-  agent --> harness --> parts
+flowchart TD
+    Agent["Agent.process(msg) → OutboundMessage"]
+    Harness["Harness<br/>消息管线: Session→Memory→Context<br/>工具管线: Lookup→Validate→Execute"]
+    Parts["零件库<br/>tools · providers · permissions · hooks<br/>session · memory · observability · cron"]
+    Agent --> Harness --> Parts
 ```
 
 ---

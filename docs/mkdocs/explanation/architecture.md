@@ -19,12 +19,11 @@ Harness + LLM = Agent
 ## 三层架构
 
 ```mermaid
-block-beta
-  columns 1
-  block:agent["**Agent Layer**<br/>process(msg) → OutboundMessage<br/>并发控制 · 会话管理 · 记忆合并 · 编排管线"]
-  block:harness["**Harness Layer**<br/>消息管线: Session→Consolidation→Context→ReAct→Persist<br/>工具管线: Lookup→Validate→Permission→Execute<br/>回调注入 · 管道连接 · 默认行为"]
-  block:parts["**Parts Library** (零件库)<br/>tools · providers · permissions · hooks · session · memory<br/>cron · observability · mcp · channels · commands · plugins · sandbox"]
-  agent --> harness --> parts
+flowchart TD
+    Agent["**Agent Layer**<br/>process(msg) → OutboundMessage<br/>并发控制 · 会话管理 · 记忆合并"]
+    Harness["**Harness Layer**<br/>消息管线: Session→Consolidation→Context→ReAct<br/>工具管线: Lookup→Validate→Permission→Execute<br/>回调注入 · 管道连接"]
+    Parts["**Parts Library** (零件库)<br/>tools · providers · permissions · hooks<br/>session · memory · cron · observability · mcp"]
+    Agent --> Harness --> Parts
 ```
 
 ### Agent Layer（代理层）
@@ -175,26 +174,12 @@ LLM 决定调用工具
 LLM Provider 使用经典的 **Template Method** 设计模式：
 
 ```mermaid
-classDiagram
-    class LLMProvider {
-        <<abstract>>
-        +chat()* LLMResponse
-        +chat_stream() LLMResponse
-        +get_default_model()* str
-        +chat_with_retry() LLMResponse
-        +chat_stream_with_retry() LLMResponse
-    }
-    class AnthropicProvider {
-        +chat() LLMResponse
-        +get_default_model() str
-    }
-    class OpenAICompatProvider {
-        +chat() LLMResponse
-        +chat_stream() LLMResponse
-        +get_default_model() str
-    }
-    LLMProvider <|-- AnthropicProvider : extends
-    LLMProvider <|-- OpenAICompatProvider : extends
+flowchart TD
+    LLMProvider["LLMProvider (ABC)<br/>chat() — 抽象方法<br/>chat_stream() — 可重写<br/>get_default_model() — 抽象方法<br/>chat_with_retry() — Template Method<br/>chat_stream_with_retry() — Template Method"]
+    Anthropic["AnthropicProvider<br/>Anthropic SDK 适配"]
+    OpenAICompat["OpenAICompatProvider<br/>OpenAI SDK / 任意兼容 API 适配"]
+    LLMProvider --> Anthropic
+    LLMProvider --> OpenAICompat
 ```
 
 为什么选择 Template Method 而非 Strategy 或 Adapter？
