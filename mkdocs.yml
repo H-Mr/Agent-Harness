@@ -90,6 +90,14 @@ plugins:
 
 nav:
   - 首页: index.md
+  - 7天深入 (Deep Dive):
+      - "Day 1 总览与管线": tutorial/day1-overview.md
+      - "Day 2 核心循环与 Provider": tutorial/day2-loop-providers.md
+      - "Day 3 工具系统": tutorial/day3-tools.md
+      - "Day 4 上下文、记忆与会话": tutorial/day4-context-memory.md
+      - "Day 5 子Agent、调度与钩子": tutorial/day5-subagent-scheduler.md
+      - "Day 6 安全、通道与权限": tutorial/day6-security-channels.md
+      - "Day 7 全线贯通": tutorial/day7-full-walkthrough.md
   - 教程 (Tutorial):
       - 快速开始: tutorials/quick-start.md
       - 编写自定义工具: tutorials/custom-tool.md
