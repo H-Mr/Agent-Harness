@@ -107,6 +107,7 @@ nav:
       - 对接微信/飞书: how-to/multi-channel.md
       - 创建定时任务: how-to/use-cron.md
       - 开启观测追踪: how-to/enable-observability.md
+      - 配置记忆压缩: how-to/configure-memory.md
       - 选择正确的抽象层: how-to/choose-abstraction.md
   - API 参考 (Reference):
       - Harness: api/harness.md

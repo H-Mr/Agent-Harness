@@ -5,3 +5,10 @@
 ::: agent_harness.memory.store
 
 ::: agent_harness.memory.consolidator
+
+## 压缩策略
+
+::: agent_harness.memory.policy
+    options:
+      show_root_heading: true
+      heading_level: 2
