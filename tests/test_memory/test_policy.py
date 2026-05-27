@@ -35,7 +35,7 @@ class TestMessageCountPolicy:
     async def test_triggers_when_over_limit(self, session, consolidator):
         session.last_consolidated = 0
         policy = MessageCountPolicy(max_messages=50)
-        result = await policy.should_consolidate(session, policy)
+        result = await policy.should_consolidate(session, consolidator)
         # 120 messages > 50 -> should return a chunk
         assert result is not None
         assert len(result) > 0

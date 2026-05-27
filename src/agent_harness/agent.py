@@ -230,7 +230,7 @@ class Agent:
 
                 # Step 4: Memory consolidation (only if both memory & sessions)
                 if self._consolidator is not None and session is not None:
-                    await self._consolidator.maybe_consolidate_by_tokens(session)
+                    await self._consolidator.maybe_consolidate(session)
 
                 # Step 5: Build messages via pipeline callback
                 initial_messages = await self.harness.on_build_context(msg, history)

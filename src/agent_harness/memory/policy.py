@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 class TokenBudgetPolicy:
     """Consolidate when estimated prompt tokens exceed a safe budget.
 
-    This replicates the default behaviour of ``maybe_consolidate_by_tokens``.
+    This replicates the default behaviour of the legacy ``maybe_consolidate_by_tokens``.
     """
 
     context_window_tokens: int

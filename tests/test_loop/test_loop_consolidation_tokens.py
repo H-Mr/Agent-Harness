@@ -139,10 +139,10 @@ async def test_consolidation_loops_until_target_met(tmp_path, monkeypatch) -> No
         ],
         get_tool_definitions=lambda: [],
     )
-    consolidator.store._MAX_FAILURES_BEFORE_RAW_ARCHIVE = 0
+    consolidator._MAX_FAILURES_BEFORE_RAW_ARCHIVE = 0
 
     # should run without error
-    await consolidator.maybe_consolidate_by_tokens(session)
+    await consolidator.maybe_consolidate(session)
     assert True
 
 
@@ -173,6 +173,6 @@ async def test_consolidation_continues_below_trigger_until_half_target(tmp_path,
         get_tool_definitions=lambda: [],
     )
 
-    consolidator.store._MAX_FAILURES_BEFORE_RAW_ARCHIVE = 0
-    await consolidator.maybe_consolidate_by_tokens(session)
+    consolidator._MAX_FAILURES_BEFORE_RAW_ARCHIVE = 0
+    await consolidator.maybe_consolidate(session)
     assert True
