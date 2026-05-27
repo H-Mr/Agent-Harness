@@ -11,7 +11,7 @@ import asyncio
 import logging
 from contextlib import nullcontext
 from pathlib import Path
-from typing import Any
+from typing import Any, Awaitable, Callable
 
 from agent_harness.bus.events import InboundMessage, OutboundMessage
 from agent_harness.harness import Harness
@@ -51,6 +51,11 @@ class Agent:
         model: str | None = None,
         max_iterations: int = 40,
         max_concurrent: int = 3,
+        on_stream: Callable[[str], Awaitable[None]] | None = None,
+        on_progress: Callable[[str, bool], Awaitable[None]] | None = None,
+        on_stream_end: Callable[[bool], Awaitable[None]] | None = None,
+        on_event: Callable[[object], Awaitable[None]] | None = None,
+        ask_user: Callable[[str], Awaitable[str]] | None = None,
     ) -> None:
         self.harness = harness
         self.model = model or harness.provider.get_default_model()
@@ -63,7 +68,13 @@ class Agent:
         )
 
         # Build the AgentLoop with wired callbacks ----------------------------
-        self._loop = self._build_loop()
+        self._loop = self._build_loop(
+            on_stream=on_stream,
+            on_progress=on_progress,
+            on_stream_end=on_stream_end,
+            on_event=on_event,
+            ask_user=ask_user,
+        )
 
         # Memory consolidator (only when both memory and sessions are active) --
         self._consolidator: MemoryConsolidator | None = None
@@ -83,7 +94,15 @@ class Agent:
     # AgentLoop construction
     # ------------------------------------------------------------------
 
-    def _build_loop(self) -> AgentLoop:
+    def _build_loop(
+        self,
+        *,
+        on_stream: Callable[[str], Awaitable[None]] | None = None,
+        on_progress: Callable[[str, bool], Awaitable[None]] | None = None,
+        on_stream_end: Callable[[bool], Awaitable[None]] | None = None,
+        on_event: Callable[[object], Awaitable[None]] | None = None,
+        ask_user: Callable[[str], Awaitable[str]] | None = None,
+    ) -> AgentLoop:
         """Create the :class:`AgentLoop` with all callbacks wired to *harness*."""
         harness = self.harness
 
@@ -116,6 +135,11 @@ class Agent:
             build_messages=lambda *args, **kwargs: [],
             execute_tool=execute_tool,
             get_tool_definitions=get_tool_definitions,
+            on_stream=on_stream,
+            on_progress=on_progress,
+            on_stream_end=on_stream_end,
+            on_event=on_event,
+            ask_user=ask_user,
         )
 
         return AgentLoop(
