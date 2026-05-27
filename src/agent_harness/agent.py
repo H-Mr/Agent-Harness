@@ -42,6 +42,22 @@ class Agent:
 
     When sessions are **not** configured the Agent operates in stateless mode:
     session bookkeeping and memory consolidation are skipped entirely.
+
+    Args:
+        harness: Fully configured :class:`Harness` instance.
+        model: Model name override (defaults to provider default).
+        max_iterations: Maximum ReAct loop iterations before forced stop.
+        max_concurrent: Maximum concurrent sessions (semaphore gate).
+        on_stream: Called with each text delta during LLM streaming output.
+            Leave ``None`` to use non-streaming mode.
+        on_progress: Called with ``(hint: str, is_tool_start: bool)`` when a
+            tool call begins, giving a human-readable hint like ``read_file("config.py")``.
+        on_stream_end: Called with ``resuming: bool`` when a streaming segment
+            ends; ``resuming=True`` means tool calls follow.
+        on_event: Called with structured observability events
+            (:class:`ToolExecutionStarted <agent_harness.observability.events.ToolExecutionStarted>`,
+            :class:`AssistantTurnComplete <agent_harness.observability.events.AssistantTurnComplete>`, etc.).
+        ask_user: Called when the loop needs user input (blocks until returned).
     """
 
     def __init__(

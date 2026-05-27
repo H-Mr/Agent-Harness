@@ -244,6 +244,20 @@ def _matches_hook(hook: HookDefinition, payload: dict[str, Any]) -> bool:
 
 **block_on_failure 的语义**：如果设为 `True`，该钩子返回 `success=False` 时，`AggregatedHookResult` 中的 `blocked` 字段为 True，调用者（如 PermissionChecker 或 AgentLoop）应当停止执行。这实现了"审批门"模式——某条钩子不通过，整个工具调用被拒绝。
 
+### 1.8 Hooks 的边界：什么场景不该用 Hook
+
+Hooks 是强大的拦截器，但它们只在**四个事件**（`SESSION_START`、`SESSION_END`、`PRE_TOOL_USE`、`POST_TOOL_USE`）触发。以下场景 Hook 无法覆盖，需要使用 `LoopCallbacks` 或 `Agent` 的回调参数：
+
+| 需求 | 正确方案 | 说明 |
+|------|---------|------|
+| LLM 流式文本输出 | `Agent(on_stream=...)` 或 `LoopCallbacks.on_stream` | Hooks 不参与 LLM 调用过程 |
+| 工具开始时的进度提示 | `Agent(on_progress=...)` 或 `LoopCallbacks.on_progress` | 不存在对应的 Hook 事件 |
+| 自定义循环终止条件 | 直接使用 `AgentLoop` | Hooks 只能阻断单个工具执行 |
+| 动态修改工具列表 | `LoopCallbacks.get_tool_definitions` | Hooks 在工具调用后才触发 |
+| Token 用量监控 | `Agent(on_event=...)` 或 `LoopCallbacks.on_event` | Hooks 不接触 LLM 响应 |
+
+**核心判断**：需要"工具执行前/后插入逻辑"用 Hook；需要"介入循环控制流或 LLM 输出"用回调。
+
 ---
 
 ## 二、源码导读

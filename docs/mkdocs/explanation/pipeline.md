@@ -353,5 +353,29 @@ except asyncio.CancelledError:
 
 唯一真正的"停止"条件是达到 `max_iterations`（默认 40）。这是符合 ReAct 模式的——LLM 在循环中负责做出决策并响应工具结果；如果工具一直出错，或许是 LLM 的打法有问题，也可能走错了方向——让它自己想办法处理。
 
+---
+
+## 管线之外：流式输出与循环控制
+
+上述管线只覆盖了**工具执行**的七个步骤。AgentLoop 的完整生命周期还包括两个管线**之外**的机制：
+
+```
+AgentLoop.run_react_loop()
+  ├─ LLM 调用
+  │    └─ on_stream(delta)       ← 流式文本增量（非管线步骤）
+  ├─ [决定调用工具]
+  │    └─ 工具执行管线（①→⑦）     ← 本文档描述的内容
+  │         ├─ Hook(PRE_TOOL_USE) ← 钩子在此介入
+  │         └─ Hook(POST_TOOL_USE)
+  └─ LLM 返回最终文本
+       └─ on_stream_end()        ← 流结束通知（非管线步骤）
+```
+
+**流式回调** (`on_stream` / `on_stream_end` / `on_progress`) 和**结构化事件** (`on_event`) 工作在管线之外的循环层。它们不参与工具执行，而是负责将循环的中间状态输出给外部消费者（UI、日志、监控）。
+
+**钩子** (`Hooks`) 则只工作在管线之内的步骤④和⑥。它们拦截单个工具调用，但看不到 LLM 输出和循环控制流。
+
+这种"管线内/外"的分离是刻意的：钩子不应该关心 UI 渲染，流式回调不应该关心权限检查。每一层有自己的职责边界。
+
 [agent-harness-tools-base-toolregistry]: ../api/tools.md
 [agent-harness-permissions-checker]: ../api/permissions.md
