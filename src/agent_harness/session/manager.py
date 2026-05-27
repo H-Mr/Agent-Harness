@@ -143,6 +143,20 @@ class Session:
         self.last_consolidated = max(0, self.last_consolidated - dropped)
         self.updated_at = datetime.now()
 
+    def remove_before(self, idx: int) -> int:
+        """Remove all messages before *idx* and reset last_consolidated to 0.
+
+        Returns:
+            Number of messages removed.
+        """
+        if idx <= 0 or idx > len(self.messages):
+            return 0
+        removed = idx
+        self.messages = self.messages[idx:]
+        self.last_consolidated = 0
+        self.updated_at = datetime.now()
+        return removed
+
 
 # ---------------------------------------------------------------------------
 # SessionManager
