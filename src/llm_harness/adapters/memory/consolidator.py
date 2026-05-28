@@ -1,0 +1,114 @@
+"""MemoryConsolidator — owns consolidation policy and session offset management."""
+
+from __future__ import annotations
+
+import asyncio
+import logging
+import weakref
+from collections.abc import Awaitable
+from typing import Any, Callable
+
+from llm_harness.adapters.memory.backend import MemoryBackend
+from llm_harness.adapters.memory.policy import TokenBudgetPolicy
+from llm_harness.core.session.manager import SessionManager
+from llm_harness.core.session.session import Session
+
+logger = logging.getLogger(__name__)
+
+
+def estimate_message_tokens(message: dict) -> int:
+    content = message.get("content", "")
+    if isinstance(content, str):
+        return len(content) // 4
+    if isinstance(content, list):
+        return sum(len(str(item)) // 4 for item in content)
+    return 0
+
+
+class MemoryConsolidator:
+    MAX_CONSOLIDATION_ROUNDS = 5
+
+    def __init__(
+        self,
+        backend: MemoryBackend,
+        sessions: SessionManager,
+        context_window_tokens: int,
+        build_messages: Callable[
+            ..., list[dict[str, Any]] | Awaitable[list[dict[str, Any]]]
+        ],
+        get_tool_definitions: Callable[[], list[dict[str, Any]]],
+        max_completion_tokens: int = 4096,
+        policy: object = None,
+    ):
+        self.backend = backend
+        self.sessions = sessions
+        self.context_window_tokens = context_window_tokens
+        self.max_completion_tokens = max_completion_tokens
+        self._build_messages = build_messages
+        self._get_tool_definitions = get_tool_definitions
+        self._policy = policy or TokenBudgetPolicy(
+            context_window_tokens=context_window_tokens,
+            max_completion_tokens=max_completion_tokens,
+        )
+        self._locks: weakref.WeakValueDictionary[str, asyncio.Lock] = (
+            weakref.WeakValueDictionary()
+        )
+
+    def get_lock(self, session_key: str) -> asyncio.Lock:
+        return self._locks.setdefault(session_key, asyncio.Lock())
+
+    def pick_consolidation_boundary(
+        self, session: Session, tokens_to_remove: int
+    ) -> tuple[int, int] | None:
+        start = session.last_consolidated
+        if start >= len(session.messages) or tokens_to_remove <= 0:
+            return None
+        removed = 0
+        last = None
+        for idx in range(start, len(session.messages)):
+            msg = session.messages[idx]
+            if idx > start and msg.get("role") == "user":
+                last = (idx, removed)
+                if removed >= tokens_to_remove:
+                    return last
+            removed += estimate_message_tokens(msg)
+        return last
+
+    async def estimate_session_prompt_tokens(
+        self, session: Session
+    ) -> tuple[int, str]:
+        history = session.get_history(max_messages=0)
+        channel, chat_id = (
+            session.key.split(":", 1) if ":" in session.key else (None, None)
+        )
+        probe = self._build_messages(
+            history=history,
+            current_message="[token-probe]",
+            channel=channel,
+            chat_id=chat_id,
+        )
+        if asyncio.iscoroutine(probe):
+            probe = await probe
+        msg_tokens = sum(estimate_message_tokens(m) for m in probe)
+        tool_tokens = sum(
+            len(str(t)) // 4 for t in self._get_tool_definitions()
+        )
+        return msg_tokens + tool_tokens, "estimate"
+
+    async def maybe_consolidate(self, session: Session) -> None:
+        if not session.messages or self.context_window_tokens <= 0:
+            return
+        lock = self.get_lock(session.key)
+        async with lock:
+            for _ in range(self.MAX_CONSOLIDATION_ROUNDS):
+                chunk = await self._policy.should_consolidate(session, self)
+                if chunk is None or not chunk:
+                    return
+                logger.info(
+                    "Consolidating %s messages for %s", len(chunk), session.key
+                )
+                ok = await self.backend.consolidate(session.key, chunk)
+                if not ok:
+                    return
+                session.remove_before(session.last_consolidated + len(chunk))
+                await self.sessions.save(session)
