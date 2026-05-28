@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Iterable
 
 from llm_harness.extensions.skills.types import SkillDefinition
+
+logger = logging.getLogger(__name__)
 
 
 def load_skills_from_dirs(
@@ -17,7 +20,7 @@ def load_skills_from_dirs(
 
     Supported layout:
 
-    - ``<root>/<skill-dir>/SKILL.md``
+    - ``<root>/<skill-dir>/CLAUDE.md``
     """
     skills: list[SkillDefinition] = []
     if not directories:
@@ -26,11 +29,13 @@ def load_skills_from_dirs(
     seen: set[Path] = set()
     for directory in directories:
         root = Path(directory).expanduser().resolve()
-        root.mkdir(parents=True, exist_ok=True)
+        if not root.exists():
+            logger.warning("Skill directory '%s' does not exist, skipping", root)
+            continue
         candidates: list[Path] = []
         for child in sorted(root.iterdir()):
             if child.is_dir():
-                skill_path = child / "SKILL.md"
+                skill_path = child / "CLAUDE.md"
                 if skill_path.exists():
                     candidates.append(skill_path)
         for path in candidates:

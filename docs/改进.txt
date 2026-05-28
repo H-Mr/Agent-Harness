@@ -1,5 +1,17 @@
-1. 观测也变成后端 		√
-2. 会话也变成后端		√
-3. MemoryBackend(Protocol):的write_section改为追加写入。		√
-4. 文件系统如果没传provider,改造存原始归档。模型总结失败，也要存原始归档		√
-5. 沙箱后端的http client 有并发风险，使用双重检查锁		√
+1. 观测也变成后端            √ (DefaultObservabilityBackend)
+2. 会话也变成后端              √ (FileSessionBackend)
+3. MemoryBackend.write_section 改为追加写入 √
+4. 文件系统如果没传 provider，改造存原始归档。模型总结失败，也要存原始归档 √ (_raw_archive)
+5. 沙箱后端的 http client 有并发风险，使用双重检查锁 √ (已删除 OpenSandbox)
+----
+6. 沙箱改为 srt 实现          √ (2026-05-29)
+7. 多租户 SaaS 隔离           √ (sender_id 隔离 + srt OS 级)
+8. ToolFactory 统一工具创建    √ (消除 harness.py 和 __main__.py 重复)
+9. 回调类型 Any → Protocol    √ (loop.py 4 个 Protocol)
+10. 路径清理重复提取           √ (_path_utils.py resolve_safe_path)
+11. session_key 契约显式化     √ (Session.channel/chat_id 属性)
+12. TokenBudgetPolicy 修复     √ (计入 history tokens)
+13. 子 Agent 路由修复          √ (session_key_override + origin_account)
+14. srt execute env/超时修复  √ (env 传递 + timeout kill)
+----
+数据分析 skill: data-analysis (待开发)

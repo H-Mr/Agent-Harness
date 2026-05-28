@@ -17,24 +17,32 @@ logger = logging.getLogger(__name__)
 
 
 class SubprocessBackend:
-    def __init__(self, bus: MessageBus, skills_path: str = "", mailbox: Mailbox | None = None):
+    def __init__(self, bus: MessageBus, workspace_root: Path | None = None, mailbox: Mailbox | None = None):
         self.bus = bus
-        self.skills_path = skills_path
+        self._workspace_root = Path(workspace_root) if workspace_root else Path.cwd()
         self.mailbox = mailbox or Mailbox(Path.home() / ".llm-harness" / "mail")
         self._processes: dict[str, asyncio.subprocess.Process] = {}
         self._session_keys: dict[str, str] = {}
 
-    async def spawn(self, config: SpawnConfig, origin_session_key: str = "") -> SpawnResult:
+    async def spawn(self, config: SpawnConfig, origin_session_key: str = "", origin_account: str = "") -> SpawnResult:
         agent_id = f"{config.agent_name}-{os.urandom(4).hex()}"
+        account = origin_account or (origin_session_key.split(":", 1)[0] if ":" in origin_session_key else origin_session_key)
+        account_ws = self._workspace_root / account
+
         env = os.environ.copy()
         env["LLM_HARNESS_WORKER"] = "1"
         env["LLM_HARNESS_AGENT_NAME"] = config.agent_name
+        env["LLM_HARNESS_ACCOUNT"] = account
+        env["LLM_HARNESS_ACCOUNT_WS"] = str(account_ws)
 
-        cmd = [sys.executable, "-m", "llm_harness", "--worker",
-               "--agent-def", config.agent_name,
-               "--tools", ",".join(config.tool_names)]
-        if self.skills_path:
-            cmd.extend(["--skills-path", self.skills_path])
+        worker_cmd = [sys.executable, "-m", "llm_harness", "--worker",
+                      "--agent-def", config.agent_name,
+                      "--tools", ",".join(config.tool_names),
+                      "--workspace", str(account_ws)]
+        if config.model:
+            worker_cmd.extend(["--model", config.model])
+
+        cmd = ["srt", f"--read={account_ws}", f"--write={account_ws}", "--", *worker_cmd]
 
         try:
             proc = await asyncio.create_subprocess_exec(
@@ -57,17 +65,15 @@ class SubprocessBackend:
 
     async def _watch(self, agent_id: str, proc: asyncio.subprocess.Process) -> None:
         try:
-            await proc.wait()
-            stdout = await proc.stdout.read() if proc.stdout else b""
-            result = stdout.decode("utf-8", errors="replace")
+            stdout_bytes, stderr_bytes = await proc.communicate()
+            result = stdout_bytes.decode("utf-8", errors="replace") if stdout_bytes else ""
+            if stderr_bytes:
+                logger.debug("Sub-agent %s stderr: %s", agent_id, stderr_bytes.decode("utf-8", errors="replace")[:500])
             origin_key = self._session_keys.get(agent_id, "")
-            if origin_key:
-                channel, chat_id = origin_key.split(":", 1) if ":" in origin_key else ("system", origin_key)
-            else:
-                channel, chat_id = "system", agent_id
             msg = InboundMessage(
                 channel="system", sender_id=agent_id,
-                chat_id=f"{channel}:{chat_id}" if channel != "system" else chat_id,
+                chat_id=origin_key,
+                session_key_override=origin_key,
                 content=f"<task-notification><task_id>{agent_id}</task_id><status>{'completed' if proc.returncode==0 else 'failed'}</status><result>{result}</result></task-notification>",
             )
             await self.bus.publish_inbound(msg)
@@ -75,6 +81,7 @@ class SubprocessBackend:
             logger.exception("Watcher failed for %s", agent_id)
         finally:
             self._processes.pop(agent_id, None)
+            self._session_keys.pop(agent_id, None)
 
     async def send_message(self, agent_id: str, message: str) -> bool:
         if agent_id not in self._processes:

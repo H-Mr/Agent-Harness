@@ -1,5 +1,6 @@
 """llm-harness entry point — --worker mode or normal startup."""
 
+import os
 import sys
 import asyncio
 
@@ -22,8 +23,8 @@ async def worker_main():
     parser.add_argument("--worker", action="store_true")
     parser.add_argument("--agent-def", type=str, required=True)
     parser.add_argument("--tools", type=str, default="read_file,glob,grep,web_search")
-    parser.add_argument("--skills-path", type=str, default="")
     parser.add_argument("--model", type=str, default="")
+    parser.add_argument("--workspace", type=str, default="")
     args = parser.parse_args()
 
     prompt = sys.stdin.read().strip()
@@ -45,10 +46,16 @@ async def worker_main():
         print(f"Error: unknown agent definition '{args.agent_def}'")
         return
 
+    from llm_harness.adapters.sandbox.srt import SRTSandboxBackend
+    from llm_harness.core.tools.factory import ToolFactory
+
+    workspace_arg = getattr(args, 'workspace', None) or os.environ.get('LLM_HARNESS_ACCOUNT_WS', '.')
+    sandbox = SRTSandboxBackend(workspace_arg)
+    factory = ToolFactory(sandbox=sandbox)
     tool_names = args.tools.split(",")
     tool_registry = ToolRegistry()
     for name in tool_names:
-        tool = _build_worker_tool(name, tool_registry)
+        tool = factory.build(name)
         if tool:
             tool_registry.register(tool)
 
@@ -80,22 +87,13 @@ async def normal_main():
 
 
 def _instantiate_provider(spec):
+    import os
+    api_key = os.environ.get(spec.env_key) if spec.env_key else None
     if spec.backend == "anthropic":
         from llm_harness.adapters.providers.anthropic_provider import AnthropicProvider
-        return AnthropicProvider()
+        return AnthropicProvider(api_key=api_key)
     from llm_harness.adapters.providers.openai_compat_provider import OpenAICompatProvider
-    return OpenAICompatProvider(model=spec.default_model or "", api_base=spec.default_api_base or "")
-
-
-def _build_worker_tool(name, registry):
-    """Build a single tool for worker context (independent tools only)."""
-    if name == "web_search":
-        from llm_harness.core.tools.web_search import WebSearchTool
-        return WebSearchTool()
-    if name == "web_fetch":
-        from llm_harness.core.tools.web_fetch import WebFetchTool
-        return WebFetchTool()
-    return None
+    return OpenAICompatProvider(api_key=api_key, model=spec.default_model or "", api_base=spec.default_api_base or "")
 
 
 if __name__ == "__main__":

@@ -11,9 +11,10 @@ logger = logging.getLogger(__name__)
 
 
 class SessionManager:
-    def __init__(self, backend: SessionBackend):
+    def __init__(self, backend: SessionBackend, *, cache_max_size: int = 1000):
         self.backend = backend
         self._cache: dict[str, Session] = {}
+        self._cache_max_size = cache_max_size
 
     async def get_or_create(self, key: str) -> Session:
         if key in self._cache:
@@ -27,6 +28,13 @@ class SessionManager:
             )
         else:
             session = Session(key=key)
+
+        if len(self._cache) >= self._cache_max_size:
+            overflow = len(self._cache) - self._cache_max_size + 1
+            for stale_key in list(self._cache)[:overflow]:
+                if stale_key != key:
+                    self._cache.pop(stale_key, None)
+
         self._cache[key] = session
         return session
 

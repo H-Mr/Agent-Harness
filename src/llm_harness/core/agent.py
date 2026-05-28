@@ -31,10 +31,26 @@ class Agent:
         self._observability = observability
         self._workspace_cwd = workspace_cwd or Path("/workspace")
         self._session_locks: dict[str, asyncio.Lock] = {}
+        self._lock_max_size = 10_000
 
     async def process(self, msg: InboundMessage) -> OutboundMessage | None:
         session_key = msg.session_key
+        account = msg.sender_id
+        chat_id = msg.chat_id
+
+        # {base}/{account}/sessions/{channel}/{chat_id}/files/
+        session_ws = (self._workspace_cwd / account / "sessions" / msg.channel / chat_id / "files").resolve()
+        if not str(session_ws).startswith(str(self._workspace_cwd.resolve())):
+            raise PermissionError(f"Session workspace traversal: {session_key}")
+        session_ws.mkdir(parents=True, exist_ok=True)
+
         lock = self._session_locks.setdefault(session_key, asyncio.Lock())
+
+        if len(self._session_locks) > self._lock_max_size:
+            overflow = len(self._session_locks) - self._lock_max_size + 100
+            for stale_key in list(self._session_locks)[:overflow]:
+                if stale_key != session_key:
+                    self._session_locks.pop(stale_key, None)
 
         async with lock:
             try:
@@ -50,9 +66,9 @@ class Agent:
                     await self._sessions.save(session)
 
                 if self._consolidator and session:
-                    await self._consolidator.maybe_consolidate(session)
+                    await self._consolidator.maybe_consolidate(session, account=account)
 
-                result = await self._loop.run(msg, history, cwd=self._workspace_cwd)
+                result = await self._loop.run(msg, history, cwd=session_ws)
 
                 if session:
                     self._save_turn(session, result)
@@ -71,7 +87,7 @@ class Agent:
                                        content=f"Sorry, I encountered an error: {exc}")
 
     def _save_turn(self, session, result) -> None:
-        for msg in result.messages:
+        for msg in result.messages[result.new_messages_start:]:
             role = msg.get("role", "")
             if role not in ("assistant", "tool"):
                 continue

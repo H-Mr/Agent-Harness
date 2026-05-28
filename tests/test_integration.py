@@ -14,16 +14,16 @@ from llm_harness.core.harness import Harness
 
 class TestHarness:
     def test_create_minimal(self):
-        h = Harness(memory="file:///tmp/test", sandbox="none")
+        h = Harness(memory="file:///tmp/test")
         assert h.memory is not None
-        assert h.sandbox is None
+        assert h.sandbox is not None
 
     def test_url_resolution(self):
-        h = Harness(memory="tencentdb://localhost:8420", sandbox="opensandbox://localhost:8080")
+        h = Harness(memory="tencentdb://localhost:8420", sandbox="srt")
         from llm_harness.adapters.memory.tencentdb import TencentDBMemoryBackend
-        from llm_harness.adapters.sandbox.opensandbox import OpenSandboxBackend
+        from llm_harness.adapters.sandbox.srt import SRTSandboxBackend
         assert isinstance(h.memory, TencentDBMemoryBackend)
-        assert isinstance(h.sandbox, OpenSandboxBackend)
+        assert isinstance(h.sandbox, SRTSandboxBackend)
 
 
 class TestSessionBackend:

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from llm_harness.adapters.session.backend import SessionBackend
+from llm_harness.adapters._path_utils import resolve_safe_path
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +19,15 @@ class FileSessionBackend:
         self.base_dir.mkdir(parents=True, exist_ok=True)
 
     def _path(self, session_key: str) -> Path:
-        import re
-        safe = re.sub(r'[<>:"/\\|?*]', "_", session_key)
-        return self.base_dir / f"{safe}.jsonl"
+        if ":" in session_key:
+            account, _, session = session_key.partition(":")
+        else:
+            account, session = session_key, "default"
+        account_dir = resolve_safe_path(self.base_dir, account)
+        safe_session = resolve_safe_path(self.base_dir, session).name
+        d = account_dir / "sessions" / safe_session
+        d.mkdir(parents=True, exist_ok=True)
+        return d / "session.jsonl"
 
     async def load(self, session_key: str) -> dict[str, Any] | None:
         path = self._path(session_key)
@@ -47,23 +54,30 @@ class FileSessionBackend:
             return None
 
     async def save(self, session_key: str, state: dict[str, Any]) -> None:
+        import os
         path = self._path(session_key)
-        with open(path, "w", encoding="utf-8") as f:
-            meta = {"_type": "metadata", "key": session_key,
-                    "last_consolidated": state.get("last_consolidated", 0),
-                    "metadata": state.get("metadata", {})}
-            f.write(json.dumps(meta, ensure_ascii=False) + "\n")
-            for msg in state.get("messages", []):
-                f.write(json.dumps(msg, ensure_ascii=False) + "\n")
+        tmp_path = path.with_suffix(path.suffix + ".tmp")
+        meta = {"_type": "metadata", "key": session_key,
+                "last_consolidated": state.get("last_consolidated", 0),
+                "metadata": state.get("metadata", {})}
+        lines = [json.dumps(meta, ensure_ascii=False)]
+        for msg in state.get("messages", []):
+            lines.append(json.dumps(msg, ensure_ascii=False))
+        content = "\n".join(lines) + "\n"
+        with open(tmp_path, "w", encoding="utf-8") as f:
+            f.write(content)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp_path, path)
 
     async def list_keys(self) -> list[str]:
         keys = []
-        for p in self.base_dir.glob("*.jsonl"):
+        for jsonl in self.base_dir.glob("*/sessions/*/session.jsonl"):
             try:
-                with open(p, encoding="utf-8") as f:
+                with open(jsonl, encoding="utf-8") as f:
                     first = json.loads(f.readline().strip())
                 if first.get("_type") == "metadata":
-                    keys.append(first.get("key", p.stem))
+                    keys.append(first.get("key", jsonl.parent.name))
             except Exception:
                 continue
         return keys

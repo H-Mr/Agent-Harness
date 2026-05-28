@@ -52,6 +52,7 @@ class ChannelManager:
         self.send_progress = send_progress
         self.send_max_retries = send_max_retries
         self.channels: dict[str, BaseChannel] = {}
+        self._channel_tasks: dict[str, asyncio.Task] = {}
         self._dispatch_task: asyncio.Task | None = None
 
         self._init_channels()
@@ -80,8 +81,13 @@ class ChannelManager:
 
     def _validate_allow_from(self) -> None:
         for name, ch in self.channels.items():
-            if getattr(ch.config, "allow_from", None) == []:
-                raise SystemExit(
+            allow_list = (
+                ch.config.get("allow_from", [])
+                if isinstance(ch.config, dict)
+                else getattr(ch.config, "allow_from", [])
+            )
+            if not allow_list:
+                raise ValueError(
                     f'Error: "{name}" has empty allowFrom (denies all). '
                     f'Set ["*"] to allow everyone, or add specific user IDs.'
                 )
@@ -103,13 +109,13 @@ class ChannelManager:
         self._dispatch_task = asyncio.create_task(self._dispatch_outbound())
 
         # Start channels
-        tasks = []
         for name, channel in self.channels.items():
             logger.info("Starting %s channel...", name)
-            tasks.append(asyncio.create_task(self._start_channel(name, channel)))
+            task = asyncio.create_task(self._start_channel(name, channel))
+            self._channel_tasks[name] = task
 
         # Wait for all to complete (they should run forever)
-        await asyncio.gather(*tasks, return_exceptions=True)
+        await asyncio.gather(*self._channel_tasks.values(), return_exceptions=True)
 
     async def stop_all(self) -> None:
         """Stop all channels and the dispatcher."""
@@ -123,7 +129,12 @@ class ChannelManager:
             except asyncio.CancelledError:
                 pass
 
-        # Stop all channels
+        # Cancel all channel tasks
+        for name, task in self._channel_tasks.items():
+            if not task.done():
+                task.cancel()
+
+        # Stop all channels (graceful cleanup after cancellation)
         for name, channel in self.channels.items():
             try:
                 await channel.stop()

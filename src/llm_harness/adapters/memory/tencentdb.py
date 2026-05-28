@@ -30,9 +30,10 @@ class TencentDBMemoryBackend:
             return self._client
 
     async def close(self) -> None:
-        if self._client:
-            await self._client.aclose()
-            self._client = None
+        async with self._client_lock:
+            if self._client:
+                await self._client.aclose()
+                self._client = None
 
     async def get_context(self, namespace: str) -> str:
         client = await self._ensure_client()

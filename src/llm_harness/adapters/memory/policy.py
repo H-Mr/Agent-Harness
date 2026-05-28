@@ -23,7 +23,7 @@ class TokenBudgetPolicy:
         if estimated < budget:
             return None
         boundary = consolidator.pick_consolidation_boundary(
-            session, max(1, estimated - budget // 2)
+            session, max(1, (estimated - budget) // 2)
         )
         if boundary is None:
             return None

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -12,7 +13,7 @@ from llm_harness.adapters.memory.tencentdb import TencentDBMemoryBackend
 from llm_harness.adapters.memory.policy import TokenBudgetPolicy
 from llm_harness.adapters.memory.consolidator import MemoryConsolidator
 from llm_harness.adapters.sandbox.backend import SandboxBackend
-from llm_harness.adapters.sandbox.opensandbox import OpenSandboxBackend
+from llm_harness.adapters.sandbox.srt import SRTSandboxBackend
 from llm_harness.adapters.session.backend import SessionBackend
 from llm_harness.adapters.session.file import FileSessionBackend
 from llm_harness.adapters.observability.backend import ObservabilityBackend
@@ -27,6 +28,7 @@ from llm_harness.core.permissions.settings import PermissionSettings
 from llm_harness.core.tools.base import ToolRegistry
 from llm_harness.core.loop import AgentLoop
 from llm_harness.core.agent import Agent
+from llm_harness.core.swarm.definitions import list_definitions
 
 log = logging.getLogger(__name__)
 
@@ -75,29 +77,24 @@ class Harness:
             if memory.startswith("file://"):
                 return FileMemoryBackend(Path(memory.replace("file://", "")))
             return FileMemoryBackend(Path(memory))
-        return FileMemoryBackend(Path(memory))
+        raise TypeError(f"Unsupported memory type: {type(memory).__name__} ({memory!r})")
 
     def _resolve_sandbox(self, sandbox):
         if sandbox is None:
-            return None
+            return SRTSandboxBackend(self.workspace)
         if isinstance(sandbox, SandboxBackend):
             return sandbox
-        if isinstance(sandbox, str):
-            if sandbox == "none":
-                return None
-            if sandbox.startswith("opensandbox://"):
-                return OpenSandboxBackend(sandbox.replace("opensandbox://", "http://"))
-            if sandbox == "opensandbox":
-                return OpenSandboxBackend()
+        if sandbox == "srt":
+            return SRTSandboxBackend(self.workspace)
         raise TypeError(f"Unsupported sandbox: {sandbox}")
 
     def _resolve_swarm(self, swarm):
         if swarm is None:
-            return SubprocessBackend(bus=self.bus)
+            return SubprocessBackend(bus=self.bus, workspace_root=self.workspace)
         if isinstance(swarm, AgentBackend):
             return swarm
         if swarm == "subprocess":
-            return SubprocessBackend(bus=self.bus)
+            return SubprocessBackend(bus=self.bus, workspace_root=self.workspace)
         if swarm == "in_process":
             return InProcessBackend()
         raise TypeError(f"Unsupported swarm: {swarm}")
@@ -136,6 +133,8 @@ class Harness:
         return PermissionChecker(PermissionSettings())
 
     def _resolve_tools(self, tool_names):
+        from llm_harness.core.tools.factory import ToolFactory
+
         registry = ToolRegistry()
         if not tool_names:
             tool_names = [
@@ -145,54 +144,16 @@ class Harness:
                 "send_message", "task_stop", "ask_user_question",
             ]
         self._harness_tool_names = tool_names
+        factory = ToolFactory(
+            sandbox=self.sandbox, memory=self.memory,
+            swarm=self.swarm, bus=self.bus,
+            harness_tool_names=tool_names,
+        )
         for name in tool_names:
-            tool = self._build_tool(name)
+            tool = factory.build(name)
             if tool:
                 registry.register(tool)
         return registry
-
-    def _build_tool(self, name: str):
-        from llm_harness.core.tools.read_file import ReadFileTool
-        from llm_harness.core.tools.write_file import WriteFileTool
-        from llm_harness.core.tools.edit_file import EditFileTool
-        from llm_harness.core.tools.exec import ExecTool
-        from llm_harness.core.tools.glob import GlobTool
-        from llm_harness.core.tools.grep import GrepTool
-        from llm_harness.core.tools.web_search import WebSearchTool
-        from llm_harness.core.tools.web_fetch import WebFetchTool
-        from llm_harness.core.tools.memory_read import MemoryReadTool
-        from llm_harness.core.tools.memory_write import MemoryWriteTool
-        from llm_harness.core.tools.agent import AgentTool
-        from llm_harness.core.tools.send_message import SendMessageTool
-        from llm_harness.core.tools.task_stop import TaskStopTool
-        from llm_harness.core.tools.ask_user import AskUserQuestionTool
-
-        DEP_MAP = {
-            "read_file": lambda: ReadFileTool(self.sandbox),
-            "write_file": lambda: WriteFileTool(self.sandbox),
-            "edit_file": lambda: EditFileTool(self.sandbox),
-            "exec": lambda: ExecTool(self.sandbox),
-            "glob": lambda: GlobTool(self.sandbox),
-            "grep": lambda: GrepTool(self.sandbox),
-            "memory_read": lambda: MemoryReadTool(self.memory),
-            "memory_write": lambda: MemoryWriteTool(self.memory),
-            "agent": lambda: AgentTool(self.swarm, self.bus, self._harness_tool_names),
-            "send_message": lambda: SendMessageTool(self.swarm),
-            "task_stop": lambda: TaskStopTool(self.swarm),
-        }
-        INDEP_MAP = {
-            "web_search": WebSearchTool,
-            "web_fetch": WebFetchTool,
-            "ask_user_question": AskUserQuestionTool,
-        }
-        factory = DEP_MAP.get(name)
-        if factory:
-            return factory()
-        fac_class = INDEP_MAP.get(name)
-        if fac_class:
-            return fac_class()
-        log.warning("Unknown tool: %s", name)
-        return None
 
     def _build_consolidator(self):
         return MemoryConsolidator(
@@ -216,14 +177,13 @@ class Harness:
         async def on_build_context(msg, history):
             parts = [
                 "You are a helpful AI assistant.",
-                f"Current time: {__import__('datetime').datetime.now().isoformat()}",
+                f"Current time: {datetime.now(timezone.utc).isoformat()}",
             ]
             if self.memory:
-                ctx = await self.memory.get_context(msg.session_key)
+                ctx = await self.memory.get_context(msg.sender_id)
                 if ctx:
                     parts.append(ctx)
-            from llm_harness.core.swarm.definitions import list_definitions as ld
-            defs = ld()
+            defs = list_definitions()
             if defs:
                 agent_list = "\n".join(
                     f"- **{d.name}**: {d.description}" for d in defs
@@ -243,6 +203,8 @@ class Harness:
             on_tool_check=lambda name, tool, args: self._permissions.evaluate(
                 name,
                 is_read_only=tool.is_read_only(args) if hasattr(tool, 'is_read_only') else False,
+                file_path=getattr(args, 'file_path', None) or getattr(args, 'path', None),
+                command=getattr(args, 'command', None),
             ),
             on_error=lambda exc, ctx: log.exception("Error in %s", ctx),
         )

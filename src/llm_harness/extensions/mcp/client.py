@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from contextlib import AsyncExitStack
-from typing import Any
+from typing import Any, Optional
 
 import httpx
 from pydantic import BaseModel, create_model
@@ -103,7 +103,7 @@ def _create_model_from_schema(name: str, schema: dict[str, Any]) -> type[BaseMod
         if is_required:
             fields[prop_name] = (python_type, ...)
         else:
-            fields[prop_name] = (python_type, None)
+            fields[prop_name] = (Optional[python_type], None)
 
     if not fields:
         return create_model(f"MCPInput_{name}")
@@ -178,6 +178,13 @@ class MCPToolWrapper(BaseTool):
         return ToolResult(output="\n".join(parts) or "(no output)")
 
 
+def _cfg_get(cfg: Any, key: str, default: Any = None) -> Any:
+    """Get a config value from either a dict or an object."""
+    if isinstance(cfg, dict):
+        return cfg.get(key, default)
+    return getattr(cfg, key, default)
+
+
 async def connect_mcp_servers(
     mcp_servers: dict, registry: ToolRegistry, stack: AsyncExitStack
 ) -> None:
@@ -189,12 +196,14 @@ async def connect_mcp_servers(
 
     for name, cfg in mcp_servers.items():
         try:
-            transport_type = cfg.type
+            transport_type = _cfg_get(cfg, "type")
+            cfg_command = _cfg_get(cfg, "command")
+            cfg_url = _cfg_get(cfg, "url")
             if not transport_type:
-                if cfg.command:
+                if cfg_command:
                     transport_type = "stdio"
-                elif cfg.url:
-                    if cfg.url.rstrip("/").endswith("/sse"):
+                elif cfg_url:
+                    if cfg_url.rstrip("/").endswith("/sse"):
                         transport_type = "sse"
                     else:
                         transport_type = "streamableHttp"
@@ -204,16 +213,18 @@ async def connect_mcp_servers(
 
             if transport_type == "stdio":
                 params = StdioServerParameters(
-                    command=cfg.command, args=cfg.args, env=cfg.env or None
+                    command=cfg_command, args=_cfg_get(cfg, "args"), env=_cfg_get(cfg, "env")
                 )
                 read, write = await stack.enter_async_context(stdio_client(params))
             elif transport_type == "sse":
+                cfg_headers = _cfg_get(cfg, "headers")
+
                 def httpx_client_factory(
                     headers: dict[str, str] | None = None,
                     timeout: httpx.Timeout | None = None,
                     auth: httpx.Auth | None = None,
                 ) -> httpx.AsyncClient:
-                    merged_headers = {**(cfg.headers or {}), **(headers or {})}
+                    merged_headers = {**(cfg_headers or {}), **(headers or {})}
                     return httpx.AsyncClient(
                         headers=merged_headers or None,
                         follow_redirects=True,
@@ -222,18 +233,18 @@ async def connect_mcp_servers(
                     )
 
                 read, write = await stack.enter_async_context(
-                    sse_client(cfg.url, httpx_client_factory=httpx_client_factory)
+                    sse_client(cfg_url, httpx_client_factory=httpx_client_factory)
                 )
             elif transport_type == "streamableHttp":
                 http_client = await stack.enter_async_context(
                     httpx.AsyncClient(
-                        headers=cfg.headers or None,
+                        headers=_cfg_get(cfg, "headers"),
                         follow_redirects=True,
                         timeout=None,
                     )
                 )
                 read, write, _ = await stack.enter_async_context(
-                    streamable_http_client(cfg.url, http_client=http_client)
+                    streamable_http_client(cfg_url, http_client=http_client)
                 )
             else:
                 logger.warning("MCP server '%s': unknown transport type '%s'", name, transport_type)
@@ -243,7 +254,7 @@ async def connect_mcp_servers(
             await session.initialize()
 
             tools = await session.list_tools()
-            enabled_tools = set(cfg.enabled_tools)
+            enabled_tools = set(_cfg_get(cfg, "enabled_tools", []))
             allow_all_tools = "*" in enabled_tools
             registered_count = 0
             matched_enabled_tools: set[str] = set()
@@ -262,7 +273,10 @@ async def connect_mcp_servers(
                         name,
                     )
                     continue
-                wrapper = MCPToolWrapper(session, name, tool_def, tool_timeout=cfg.tool_timeout)
+                wrapper = MCPToolWrapper(
+                    session, name, tool_def,
+                    tool_timeout=_cfg_get(cfg, "tool_timeout", 30),
+                )
                 registry.register(wrapper)
                 logger.debug("MCP: registered tool '%s' from server '%s'", wrapper.name, name)
                 registered_count += 1

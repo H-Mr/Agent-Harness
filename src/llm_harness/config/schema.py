@@ -37,8 +37,7 @@ class PermissionConfig(BaseModel):
 
 
 class SandboxConfig(BaseModel):
-    backend: str = "opensandbox"
-    base_url: str = "http://localhost:8080"
+    backend: str = "srt"
 
 
 class MemoryConfig(BaseModel):

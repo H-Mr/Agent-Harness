@@ -23,10 +23,11 @@ def load_config(
     for env_key, field in [
         ("LLM_HARNESS_MODEL", "model"), ("LLM_HARNESS_PROVIDER", "provider"),
         ("LLM_HARNESS_API_KEY", "api_key"), ("LLM_HARNESS_API_BASE", "api_base"),
-        ("LLM_HARNESS_WORKSPACE", "workspace"),
     ]:
         if os.environ.get(env_key):
             setattr(config.agent, field, os.environ[env_key])
+    if os.environ.get("LLM_HARNESS_WORKSPACE"):
+        config.workspace = os.environ["LLM_HARNESS_WORKSPACE"]
     if model:
         config.agent.model = model
     if provider:

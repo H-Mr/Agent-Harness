@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 from llm_harness.core.bus.queue import MessageBus
 from llm_harness.core.swarm.backend import AgentBackend, SpawnConfig
-from llm_harness.core.swarm.definitions import get_definition
+from llm_harness.core.swarm.definitions import get_definition, list_definitions
 from llm_harness.core.tools.base import BaseTool, ToolExecutionContext, ToolResult
 
 
@@ -41,9 +41,10 @@ class AgentTool(BaseTool):
         # Look up agent definition
         defn = get_definition(arguments.name)
         if defn is None:
+            available = [d.name for d in list_definitions()]
             return ToolResult(
                 output=f"Error: Unknown agent definition '{arguments.name}'. "
-                       f"Available: {', '.join(name for name in ['general-purpose', 'researcher', 'planner', 'executor', 'reviewer'])}",
+                       f"Available: {', '.join(available)}",
                 is_error=True,
             )
 
@@ -64,7 +65,8 @@ class AgentTool(BaseTool):
         )
 
         session_key = context.metadata.get("session_key", "")
-        result = await self._swarm.spawn(config, origin_session_key=session_key)
+        account = context.metadata.get("account", "")
+        result = await self._swarm.spawn(config, origin_session_key=session_key, origin_account=account)
 
         if not result.success:
             return ToolResult(

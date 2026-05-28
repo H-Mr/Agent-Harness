@@ -1,7 +1,7 @@
 """Bus event types — InboundMessage and OutboundMessage."""
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 
@@ -11,7 +11,7 @@ class InboundMessage:
     sender_id: str
     chat_id: str
     content: str
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     media: list[str] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
     session_key_override: str | None = None

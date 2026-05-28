@@ -72,6 +72,8 @@ class HookExecutor:
                 results.append(await self._run_prompt_like_hook(hook, event, payload, agent_mode=False))
             elif isinstance(hook, AgentHookDefinition):
                 results.append(await self._run_prompt_like_hook(hook, event, payload, agent_mode=True))
+            if results and results[-1].blocked:
+                break
         return AggregatedHookResult(results=results)
 
     async def _run_command_hook(
@@ -187,13 +189,16 @@ class HookExecutor:
                 reason="no LLM provider available for prompt/agent hook",
             )
 
-        response = await self._context.provider.chat_with_retry(
-            messages=[
-                {"role": "system", "content": prefix},
-                {"role": "user", "content": prompt},
-            ],
-            model=hook.model or self._context.default_model,
-            max_tokens=512,
+        response = await asyncio.wait_for(
+            self._context.provider.chat_with_retry(
+                messages=[
+                    {"role": "system", "content": prefix},
+                    {"role": "user", "content": prompt},
+                ],
+                model=hook.model or self._context.default_model,
+                max_tokens=512,
+            ),
+            timeout=getattr(hook, 'timeout_seconds', 30) or 30,
         )
 
         text = response.content or ""

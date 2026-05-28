@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import weakref
 from collections.abc import Awaitable
 from typing import Any, Callable
 
@@ -50,11 +49,15 @@ class MemoryConsolidator:
             context_window_tokens=context_window_tokens,
             max_completion_tokens=max_completion_tokens,
         )
-        self._locks: weakref.WeakValueDictionary[str, asyncio.Lock] = (
-            weakref.WeakValueDictionary()
-        )
+        self._locks: dict[str, asyncio.Lock] = {}
+        self._lock_max_size = 10_000
 
     def get_lock(self, session_key: str) -> asyncio.Lock:
+        if len(self._locks) > self._lock_max_size:
+            overflow = len(self._locks) - self._lock_max_size + 100
+            for stale_key in list(self._locks)[:overflow]:
+                if stale_key != session_key:
+                    self._locks.pop(stale_key, None)
         return self._locks.setdefault(session_key, asyncio.Lock())
 
     def pick_consolidation_boundary(
@@ -78,14 +81,11 @@ class MemoryConsolidator:
         self, session: Session
     ) -> tuple[int, str]:
         history = session.get_history(max_messages=0)
-        channel, chat_id = (
-            session.key.split(":", 1) if ":" in session.key else (None, None)
-        )
         probe = self._build_messages(
             history=history,
             current_message="[token-probe]",
-            channel=channel,
-            chat_id=chat_id,
+            channel=session.channel,
+            chat_id=session.chat_id,
         )
         if asyncio.iscoroutine(probe):
             probe = await probe
@@ -93,9 +93,11 @@ class MemoryConsolidator:
         tool_tokens = sum(
             len(str(t)) // 4 for t in self._get_tool_definitions()
         )
-        return msg_tokens + tool_tokens, "estimate"
+        active = session.messages[session.last_consolidated:]
+        history_tokens = sum(estimate_message_tokens(m) for m in active)
+        return msg_tokens + tool_tokens + history_tokens, "estimate"
 
-    async def maybe_consolidate(self, session: Session) -> None:
+    async def maybe_consolidate(self, session: Session, *, account: str = "") -> None:
         if not session.messages or self.context_window_tokens <= 0:
             return
         lock = self.get_lock(session.key)
@@ -107,7 +109,8 @@ class MemoryConsolidator:
                 logger.info(
                     "Consolidating %s messages for %s", len(chunk), session.key
                 )
-                ok = await self.backend.consolidate(session.key, chunk)
+                namespace = account or session.channel or session.key
+                ok = await self.backend.consolidate(namespace, chunk)
                 if not ok:
                     return
                 session.remove_before(session.last_consolidated + len(chunk))
