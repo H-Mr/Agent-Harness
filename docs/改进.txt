@@ -1,0 +1,5 @@
+1. 观测也变成后端
+2. 会话也变成后端
+3. MemoryBackend(Protocol):的write_section改为追加写入。
+4. 文件系统如果没传provider,改造存原始归档。模型总结失败，也要存原始归档
+5. 沙箱后端的http client 有并发风险，使用双重检查锁
