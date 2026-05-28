@@ -25,7 +25,7 @@ class InProcessBackend:
     def set_loop_fn(self, fn: callable) -> None:
         self._loop_fn = fn
 
-    async def spawn(self, config: SpawnConfig, origin_session_key: str = "") -> SpawnResult:
+    async def spawn(self, config: SpawnConfig, origin_session_key: str = "", origin_account: str = "") -> SpawnResult:
         if self._loop_fn is None:
             return SpawnResult(agent_id="", success=False, error="No loop_fn configured")
         agent_id = f"{config.agent_name}-{os.urandom(4).hex()}"

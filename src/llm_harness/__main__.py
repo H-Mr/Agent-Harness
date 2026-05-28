@@ -15,7 +15,7 @@ def main():
 async def worker_main():
     """Worker process: read prompt from stdin, run ReAct loop, write result to stdout."""
     import argparse, json
-    from llm_harness.adapters.providers.registry import detect_provider
+    from llm_harness.adapters.providers.registry import detect_provider, instantiate_provider
     from llm_harness.core.tools.base import ToolRegistry
     from llm_harness.core.loop import AgentLoop
 
@@ -37,7 +37,7 @@ async def worker_main():
         print("Error: cannot detect provider")
         return
 
-    provider = _instantiate_provider(spec)
+    provider = instantiate_provider(spec)
     model = args.model or spec.default_model or "claude-sonnet-4-6"
 
     from llm_harness.core.swarm.definitions import get_definition
@@ -80,20 +80,20 @@ async def worker_main():
 
 
 async def normal_main():
-    """Normal startup — load config, create harness and channel."""
-    from llm_harness.config import load_config
-    config = load_config()
-    print(f"llm-harness v0.1.0 — model={config.agent.model}")
+    """Normal startup — launch the full harness + agent + message loop."""
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", type=str, default=None, help="Path to YAML config")
+    parser.add_argument("--model", type=str, default=None, help="Model override")
+    parser.add_argument("--workspace", type=str, default=".", help="Workspace root")
+    args, _ = parser.parse_known_args()
 
-
-def _instantiate_provider(spec):
-    import os
-    api_key = os.environ.get(spec.env_key) if spec.env_key else None
-    if spec.backend == "anthropic":
-        from llm_harness.adapters.providers.anthropic_provider import AnthropicProvider
-        return AnthropicProvider(api_key=api_key)
-    from llm_harness.adapters.providers.openai_compat_provider import OpenAICompatProvider
-    return OpenAICompatProvider(api_key=api_key, model=spec.default_model or "", api_base=spec.default_api_base or "")
+    from llm_harness import launch
+    await launch(
+        config=args.config,
+        model=args.model or "",
+        workspace=args.workspace,
+    )
 
 
 if __name__ == "__main__":

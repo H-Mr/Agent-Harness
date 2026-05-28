@@ -377,3 +377,17 @@ def detect_provider(
             if any(kw in model_lower for kw in spec.keywords):
                 return spec
     return None
+
+
+def instantiate_provider(spec):
+    """Create a provider instance from a ``ProviderSpec``.
+
+    Reads *api_key* from the env var named by ``spec.env_key``.
+    """
+    import os
+    api_key = os.environ.get(spec.env_key) if spec.env_key else None
+    if spec.backend == "anthropic":
+        from llm_harness.adapters.providers.anthropic_provider import AnthropicProvider
+        return AnthropicProvider(api_key=api_key)
+    from llm_harness.adapters.providers.openai_compat_provider import OpenAICompatProvider
+    return OpenAICompatProvider(api_key=api_key, model=spec.default_model or "", api_base=spec.default_api_base or "")

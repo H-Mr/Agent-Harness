@@ -24,8 +24,8 @@ dependencies = [
 anthropic = ["anthropic>=0.45.0"]
 openai = ["openai>=2.8.0"]
 tools = ["ddgs>=9.5.5", "readability-lxml>=0.8.4", "chardet>=3.0.2"]
-opensandbox = ["opensandbox"]
-all = ["anthropic>=0.45.0", "openai>=2.8.0", "ddgs>=9.5.5", "readability-lxml>=0.8.4", "chardet>=3.0.2", "opensandbox"]
+websocket = ["websockets>=12.0"]
+all = ["anthropic>=0.45.0", "openai>=2.8.0", "ddgs>=9.5.5", "readability-lxml>=0.8.4", "chardet>=3.0.2", "websockets>=12.0"]
 dev = ["pytest>=8.0.0", "pytest-asyncio>=0.23.0", "ruff>=0.5.0"]
 
 [tool.hatch.build.targets.wheel]
