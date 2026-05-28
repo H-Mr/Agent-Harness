@@ -32,9 +32,10 @@ class AgentTool(BaseTool):
     )
     input_model: ClassVar[type[BaseModel]] = AgentInput
 
-    def __init__(self, swarm: AgentBackend, bus: MessageBus | None = None) -> None:
+    def __init__(self, swarm: AgentBackend, bus: MessageBus | None = None, harness_tool_names: list[str] | None = None) -> None:
         self._swarm = swarm
         self._bus = bus
+        self._harness_tool_names = harness_tool_names or []
 
     async def execute(self, arguments: AgentInput, context: ToolExecutionContext) -> ToolResult:
         # Look up agent definition
@@ -47,7 +48,7 @@ class AgentTool(BaseTool):
             )
 
         # Compute effective tool set: (harness_tools & allow) - deny + extra
-        harness_tools: list[str] = context.metadata.get("harness_tools", [])
+        harness_tools: list[str] = self._harness_tool_names
         allowed = [t for t in harness_tools if t in defn.tools_allow] if defn.tools_allow else list(harness_tools)
         denied = {t for t in allowed if t in defn.tools_deny}
         effective = [t for t in allowed if t not in denied] + list(defn.tools_extra)

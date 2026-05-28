@@ -58,6 +58,8 @@ class Harness:
         self._observability = self._resolve_observability(observability)
         self._permissions = self._resolve_permissions(permissions)
         self._tools = self._resolve_tools(tools)
+        self.context_window_tokens = context_window_tokens
+        self.max_completion_tokens = max_completion_tokens
         self._consolidator = self._build_consolidator() if self.memory else None
 
     # -- Resolvers -------------------------------------------------------
@@ -142,6 +144,7 @@ class Harness:
                 "memory_read", "memory_write", "agent",
                 "send_message", "task_stop", "ask_user_question",
             ]
+        self._harness_tool_names = tool_names
         for name in tool_names:
             tool = self._build_tool(name)
             if tool:
@@ -173,7 +176,7 @@ class Harness:
             "grep": lambda: GrepTool(self.sandbox),
             "memory_read": lambda: MemoryReadTool(self.memory),
             "memory_write": lambda: MemoryWriteTool(self.memory),
-            "agent": lambda: AgentTool(self.swarm, self.bus),
+            "agent": lambda: AgentTool(self.swarm, self.bus, self._harness_tool_names),
             "send_message": lambda: SendMessageTool(self.swarm),
             "task_stop": lambda: TaskStopTool(self.swarm),
         }
@@ -195,8 +198,8 @@ class Harness:
         return MemoryConsolidator(
             backend=self.memory,
             sessions=self._session_manager,
-            context_window_tokens=64_000,
-            max_completion_tokens=4096,
+            context_window_tokens=self.context_window_tokens,
+            max_completion_tokens=self.max_completion_tokens,
             build_messages=self._consolidator_build_messages(),
             get_tool_definitions=lambda: self._tools.to_api_schema("openai"),
         )
@@ -227,10 +230,10 @@ class Harness:
                 )
                 parts.append(f"## Available Sub-Agents\n{agent_list}")
             system = "\n\n".join(parts)
-            return [
-                {"role": "system", "content": system},
-                {"role": "user", "content": msg.content},
-            ]
+            messages = [{"role": "system", "content": system}]
+            messages.extend(history)
+            messages.append({"role": "user", "content": msg.content})
+            return messages
 
         loop = AgentLoop(
             provider=self.provider,

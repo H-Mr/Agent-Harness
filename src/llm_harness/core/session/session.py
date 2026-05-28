@@ -24,10 +24,14 @@ class Session:
     def get_history(self, max_messages: int = 500) -> list[dict[str, Any]]:
         unconsolidated = self.messages[self.last_consolidated:]
         sliced = unconsolidated[-max_messages:]
+        found = False
         for i, m in enumerate(sliced):
             if m.get("role") == "user":
                 sliced = sliced[i:]
+                found = True
                 break
+        if not found:
+            return []
         return [{"role": m["role"], "content": m.get("content", "")} for m in sliced]
 
     def remove_before(self, idx: int) -> None:

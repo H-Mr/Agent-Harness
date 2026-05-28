@@ -85,12 +85,15 @@ class AgentLoop:
                         tool_result = f"Error: invalid args for '{tc.name}': {e}"
                     else:
                         try:
-                            perm = await self._check_tool(tc.name, tool, parsed)
+                            perm = self._check_tool(tc.name, tool, parsed)
+                            if asyncio.iscoroutine(perm):
+                                perm = await perm
                             if hasattr(perm, 'allowed') and not perm.allowed:
                                 tool_result = f"Error: Permission denied: {perm.reason}"
                             else:
                                 from llm_harness.core.tools.base import ToolExecutionContext
-                                ctx = ToolExecutionContext(cwd=Path("/workspace"), metadata={})
+                                session_key = getattr(msg, 'session_key', '')
+                                ctx = ToolExecutionContext(cwd=Path("/workspace"), metadata={"session_key": session_key})
                                 r = await tool.execute(parsed, ctx)
                                 tool_result = r.output
                         except Exception as e:

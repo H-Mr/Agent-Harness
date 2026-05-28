@@ -70,6 +70,8 @@ class Agent:
     def _save_turn(self, session, result) -> None:
         for msg in result.messages:
             role = msg.get("role", "")
+            if role not in ("assistant", "tool"):
+                continue
             content = msg.get("content", "")
             if role == "assistant" and not content and not msg.get("tool_calls"):
                 continue

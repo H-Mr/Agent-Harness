@@ -59,8 +59,11 @@ class FileMemoryBackend:
 
     async def add_history(self, namespace: str, entry: str) -> None:
         p = self._dir(namespace) / "history.jsonl"
+        import json as _json
+        from datetime import datetime
+        record = {"timestamp": datetime.now().isoformat(), "entry": entry}
         with open(p, "a", encoding="utf-8") as f:
-            f.write(entry.rstrip() + "\n\n")
+            f.write(_json.dumps(record, ensure_ascii=False) + "\n")
 
     async def consolidate(
         self,
