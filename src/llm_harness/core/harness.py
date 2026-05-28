@@ -251,4 +251,5 @@ class Harness:
             sessions=self._session_manager,
             consolidator=self._consolidator,
             observability=self._observability,
+            workspace_cwd=self.workspace,
         )

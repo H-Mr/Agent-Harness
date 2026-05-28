@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from pathlib import Path
 from typing import Any
 
 from llm_harness.core.bus.events import InboundMessage, OutboundMessage
@@ -22,11 +23,13 @@ class Agent:
         sessions: SessionManager | None = None,
         consolidator: MemoryConsolidator | None = None,
         observability: ObservabilityBackend | None = None,
+        workspace_cwd: Path | None = None,
     ):
         self._loop = loop
         self._sessions = sessions
         self._consolidator = consolidator
         self._observability = observability
+        self._workspace_cwd = workspace_cwd or Path("/workspace")
         self._session_locks: dict[str, asyncio.Lock] = {}
 
     async def process(self, msg: InboundMessage) -> OutboundMessage | None:
@@ -49,7 +52,7 @@ class Agent:
                 if self._consolidator and session:
                     await self._consolidator.maybe_consolidate(session)
 
-                result = await self._loop.run(msg, history)
+                result = await self._loop.run(msg, history, cwd=self._workspace_cwd)
 
                 if session:
                     self._save_turn(session, result)

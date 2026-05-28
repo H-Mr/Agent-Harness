@@ -46,7 +46,8 @@ class AgentLoop:
         self._on_event = on_event
         self.max_iterations = max_iterations
 
-    async def run(self, msg: Any, history: list[dict[str, Any]]) -> TurnResult:
+    async def run(self, msg: Any, history: list[dict[str, Any]], *, cwd: Path | None = None) -> TurnResult:
+        workspace = cwd or Path("/workspace")
         result = TurnResult()
         messages = self._build_context(msg, history)
         if asyncio.iscoroutine(messages):
@@ -93,7 +94,7 @@ class AgentLoop:
                             else:
                                 from llm_harness.core.tools.base import ToolExecutionContext
                                 session_key = getattr(msg, 'session_key', '')
-                                ctx = ToolExecutionContext(cwd=Path("/workspace"), metadata={"session_key": session_key})
+                                ctx = ToolExecutionContext(cwd=workspace, metadata={"session_key": session_key})
                                 r = await tool.execute(parsed, ctx)
                                 tool_result = r.output
                         except Exception as e:
