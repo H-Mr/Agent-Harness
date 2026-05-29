@@ -1,19 +1,19 @@
-# How to Configure Channels
+# 如何配置 Channels
 
-## Goal
+## 目标
 
-Set up communication channels — CLI for interactive terminal use and WebSocket for external clients.
+设置通信 channel——CLI 用于交互式终端使用，WebSocket 用于外部客户端。
 
-## Prerequisites
+## 前置条件
 
-- Working llm-harness installation
-- `pip install websockets` (for WebSocket)
+- 可用的 llm-harness 安装
+- `pip install websockets`（用于 WebSocket）
 
-## Step by Step
+## 分步指南
 
-### 1. CLI Channel (stdin/stdout)
+### 1. CLI Channel（stdin/stdout）
 
-The CLI channel reads from stdin and writes to stdout. No auth needed — it trusts the terminal user.
+CLI channel 从 stdin 读取并写入 stdout。无需认证——它信任终端用户。
 
 ```python
 from llm_harness.extensions.channels.cli import CLIChannel
@@ -24,7 +24,7 @@ channel = CLIChannel({"enabled": True, "allow_from": ["*"]}, bus)
 await channel.start()
 ```
 
-### 2. WebSocket Channel with Auth
+### 2. 带认证的 WebSocket Channel
 
 ```python
 from llm_harness.extensions.channels.websocket import WebSocketChannel
@@ -32,7 +32,7 @@ from llm_harness.extensions.channels.websocket import WebSocketChannel
 async def my_auth(payload: dict) -> bool:
     token = payload.get("token", "")
     sender_id = payload.get("sender_id", "")
-    # Verify token with your auth service
+    # 使用你的认证服务验证 token
     return token == "valid-token" and sender_id != ""
 
 ws_channel = WebSocketChannel(
@@ -42,7 +42,7 @@ ws_channel = WebSocketChannel(
 )
 ```
 
-### 3. ChannelManager for Multiple Channels
+### 3. 使用 ChannelManager 管理多个 Channel
 
 ```python
 from llm_harness.extensions.channels.manager import ChannelManager
@@ -60,39 +60,39 @@ manager = ChannelManager(
     send_max_retries=3,
 )
 
-# Start all channels
+# 启动所有 channel
 await manager.start_all()
 
-# Check status
+# 查看状态
 print(manager.get_status())
 # -> {"cli": {"enabled": True, "running": True}, "websocket": {...}}
 
-# Graceful stop
+# 优雅停止
 await manager.stop_all()
 ```
 
-## WebSocket Client Example
+## WebSocket 客户端示例
 
 ```bash
-# Connect with websocat
+# 使用 websocat 连接
 websocat ws://127.0.0.1:8081
-# Send auth
+# 发送认证信息
 {"type":"auth","sender_id":"alice","chat_id":"c1","token":"valid-token"}
 # -> {"type":"auth_ok"}
-# Send message
+# 发送消息
 {"type":"message","content":"Hello"}
-# -> streaming deltas then final response
+# -> 流式 delta 然后返回最终响应
 # {"type":"delta","content":"Hello"}
 # {"type":"delta","content":" there"}
 # {"type":"done","content":"Hello there!"}
 ```
 
-## Key Configuration Fields
+## 关键配置字段
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `allow_from` | `list[str]` | Sender allowlist. `["*"]` = all, `[]` = none |
-| `host` | `str` | WebSocket bind host (default: `127.0.0.1`) |
-| `port` | `int` | WebSocket bind port (default: `8081`) |
-| `auth_callback` | `Callable` or `None` | Async auth function. `None` = no auth |
-| `streaming` | `bool` | Enable streaming deltas to clients |
+| 字段 | 类型 | 说明 |
+|-------|------|------|
+| `allow_from` | `list[str]` | 发送者白名单。`["*"]` = 全部允许，`[]` = 全部拒绝 |
+| `host` | `str` | WebSocket 绑定主机（默认：`127.0.0.1`） |
+| `port` | `int` | WebSocket 绑定端口（默认：`8081`） |
+| `auth_callback` | `Callable` 或 `None` | 异步认证函数。`None` = 不认证 |
+| `streaming` | `bool` | 启用向客户端流式推送 delta |

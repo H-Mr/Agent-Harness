@@ -1,39 +1,39 @@
-# How to Create and Load Skills
+# 如何创建和加载 Skills
 
-## Goal
+## 目标
 
-Package reusable instructions as skills that the agent can load on demand at inference time, reducing system-prompt bloat via progressive disclosure.
+将可复用的指令打包为 skill，使 agent 在推理时能够按需加载，通过渐进式披露减少系统 prompt 的臃肿。
 
-## Prerequisites
+## 前置条件
 
-- Working llm-harness installation
-- Understanding of the skill lifecycle: `SKILL.md` file -> `DirectorySkillLoader` -> `SkillRegistry` -> `SkillTool` -> agent invokes via the `skill` tool
+- 可用的 llm-harness 安装
+- 了解 skill 的生命周期：`SKILL.md` 文件 -> `DirectorySkillLoader` -> `SkillRegistry` -> `SkillTool` -> agent 通过 `skill` 工具调用
 
-## Step by Step
+## 分步指南
 
-### 1. Understand the Skill Architecture
+### 1. 理解 Skill 架构
 
-Skills follow a progressive-disclosure pattern. Instead of crowding the system prompt with every possible instruction, the harness loads only skill names and descriptions into the prompt. The LLM discovers and invokes the built-in `skill` tool to fetch full content when a task matches a skill's description.
+Skill 遵循渐进式披露模式。harness 不会将每条可能的指令都塞入系统 prompt，而是只将 skill 的名称和描述加载到 prompt 中。LLM 发现并调用内置的 `skill` 工具，在任务与某个 skill 的描述匹配时获取完整内容。
 
-The pipeline is:
+流水线如下：
 
 ```
-SKILL.md files  -->  DirectorySkillLoader  -->  SkillRegistry  -->  SkillTool  -->  agent
+SKILL.md 文件  -->  DirectorySkillLoader  -->  SkillRegistry  -->  SkillTool  -->  agent
 ```
 
-Key types in `llm_harness.extensions.skills`:
+`llm_harness.extensions.skills` 中的关键类型：
 
-| Type | Role |
+| 类型 | 作用 |
 |---|---|
-| `SkillDefinition` | A loaded skill: name, description, content, source, path |
-| `SkillLoader` (Protocol) | Interface for loading skills from any source |
-| `DirectorySkillLoader` | Filesystem implementation -- scans directories for `<name>/SKILL.md` |
-| `SkillRegistry` | Stores skills by name, provides lookup |
-| `SkillTool` | Built-in tool (`name="skill"`) that the LLM calls to retrieve full skill content |
+| `SkillDefinition` | 已加载的 skill：包含名称、描述、内容、来源、路径 |
+| `SkillLoader` (Protocol) | 从任意来源加载 skill 的接口 |
+| `DirectorySkillLoader` | 文件系统实现——扫描目录中的 `<name>/SKILL.md` |
+| `SkillRegistry` | 按名称存储 skill，提供查找功能 |
+| `SkillTool` | 内置工具（`name="skill"`），LLM 调用它以获取完整的 skill 内容 |
 
-### 2. Create a SKILL.md File
+### 2. 创建 SKILL.md 文件
 
-Create a directory named after your skill containing a `SKILL.md` file. The directory name becomes the skill name (unless overridden by YAML frontmatter).
+创建一个以你的 skill 名称命名的目录，内含 `SKILL.md` 文件。目录名称即为 skill 名称（除非被 YAML frontmatter 覆写）。
 
 ```
 skills/
@@ -43,7 +43,7 @@ skills/
     SKILL.md
 ```
 
-A SKILL.md file supports optional YAML frontmatter:
+SKILL.md 文件支持可选的 YAML frontmatter：
 
 ```markdown
 ---
@@ -64,11 +64,11 @@ When asked to optimize a SQL query, follow these steps:
 4. Provide before/after estimates for each suggestion
 ```
 
-If frontmatter is present, `name` and `description` are read from it. Otherwise the directory name is used as the skill name and the first paragraph of content becomes the description.
+如果存在 frontmatter，则从中读取 `name` 和 `description`。否则，目录名作为 skill 名称，内容的第一段作为描述。
 
-### 3. Load Skills with DirectorySkillLoader
+### 3. 使用 DirectorySkillLoader 加载 Skill
 
-Pass one or more directories to `DirectorySkillLoader`:
+向 `DirectorySkillLoader` 传递一个或多个目录：
 
 ```python
 from llm_harness.extensions.skills.loader import DirectorySkillLoader
@@ -80,7 +80,7 @@ for skill in skills:
     print(f"{skill.name}: {skill.description}")
 ```
 
-For synchronous contexts, use the convenience function:
+在同步上下文中，使用便捷函数：
 
 ```python
 from llm_harness.extensions.skills.loader import load_skills_from_dirs
@@ -88,7 +88,7 @@ from llm_harness.extensions.skills.loader import load_skills_from_dirs
 skills = load_skills_from_dirs(["./skills"])
 ```
 
-### 4. Register Skills into SkillRegistry
+### 4. 将 Skill 注册到 SkillRegistry
 
 ```python
 from llm_harness.extensions.skills.registry import SkillRegistry
@@ -97,18 +97,18 @@ registry = SkillRegistry()
 for skill in skills:
     registry.register(skill)
 
-# Lookup by name
+# 按名称查找
 sql_skill = registry.get("sql-optimization")
 print(sql_skill.content)
 
-# List all (sorted by name)
+# 列出所有（按名称排序）
 for s in registry.list_skills():
     print(f"  {s.name}: {s.description}")
 ```
 
-### 5. Wire SkillTool into the Agent
+### 5. 将 SkillTool 接入 Agent
 
-The `SkillTool` takes a `SkillRegistry` and registers itself as the `"skill"` tool, enabling the LLM to fetch skill content:
+`SkillTool` 接收 `SkillRegistry` 并将自身注册为 `"skill"` 工具，使 LLM 能够获取 skill 内容：
 
 ```python
 from llm_harness.core.tools.skill import SkillTool
@@ -118,16 +118,16 @@ tool_registry = ToolRegistry()
 tool_registry.register(SkillTool(registry))
 ```
 
-When the LLM determines a task matches a skill's description, it calls:
+当 LLM 确定某个任务与某个 skill 的描述匹配时，它会调用：
 
 ```
 tool: skill
 arguments: {"name": "sql-optimization"}
 ```
 
-And receives the full SKILL.md content as output, which is then injected into the conversation for the agent to follow.
+并接收完整的 SKILL.md 内容作为输出，然后注入到对话中供 agent 遵循。
 
-### 6. Full Integration with Harness
+### 6. 与 Harness 完整集成
 
 ```python
 import asyncio
@@ -143,17 +143,17 @@ from llm_harness.core.session.session import Session
 from llm_harness.core.bus.events import InboundMessage
 
 async def main():
-    # 1. Load skills
+    # 1. 加载 skill
     skill_defs = load_skills_from_dirs(["./skills"])
     skill_registry = SkillRegistry()
     for s in skill_defs:
         skill_registry.register(s)
 
-    # 2. Create tool registry with SkillTool
+    # 2. 创建包含 SkillTool 的工具注册表
     tools = ToolRegistry()
     tools.register(SkillTool(skill_registry))
 
-    # 3. Build harness
+    # 3. 构建 harness
     provider = OpenAICompatProvider(api_key=..., api_base="https://api.deepseek.com")
     sandbox = SRTSandboxBackend(Path("./workspace"))
     harness = Harness(
@@ -164,8 +164,8 @@ async def main():
     )
     agent = harness.create_agent()
 
-    # 4. Process a message -- the agent will discover the skill tool
-    #    and load the sql-optimization skill when relevant
+    # 4. 处理消息——agent 会发现 skill 工具，
+    #    并在相关时加载 sql-optimization skill
     msg = InboundMessage("cli", "user", "c1", "Help me optimize my slow query")
     result = await agent.process(msg, session=Session(key="demo:skills"), cwd=Path("."))
     print(result.final_content)
@@ -173,9 +173,9 @@ async def main():
 asyncio.run(main())
 ```
 
-## Skill System Prompt Injection
+## Skill 系统 Prompt 注入
 
-The harness automatically injects available skill names and descriptions into the system prompt so the LLM knows what skills exist. This happens during agent creation when `SkillTool` is registered. The standard format is:
+harness 会自动将可用的 skill 名称和描述注入到系统 prompt 中，使 LLM 知道存在哪些 skill。这在注册了 `SkillTool` 创建 agent 时发生。标准格式为：
 
 ```
 Available skills:
@@ -183,9 +183,9 @@ Available skills:
 - docker-ops: Build, run, and manage Docker containers
 ```
 
-## Checking Skill Requirements
+## 检查 Skill 依赖
 
-Skills can declare required binaries and environment variables using the `requires` metadata convention. The `check_skill_requirements` helper validates them at load time:
+Skill 可以使用 `requires` 元数据约定声明所需的二进制文件和环境变量。`check_skill_requirements` 辅助函数在加载时进行验证：
 
 ```python
 from llm_harness.extensions.skills.checker import check_skill_requirements
@@ -198,10 +198,10 @@ metadata = {
 }
 ok, missing = check_skill_requirements(metadata)
 if not ok:
-    print(f"Missing: {', '.join(missing)}")
+    print(f"缺少: {', '.join(missing)}")
 ```
 
-## Complete Example
+## 完整示例
 
 ```python
 import asyncio
@@ -216,18 +216,18 @@ from llm_harness.core.tools.skill import SkillTool
 from llm_harness.core.tools.base import ToolRegistry, ToolExecutionContext
 
 async def demo():
-    # Load and register
+    # 加载并注册
     skill_defs = load_skills_from_dirs(["./skills"])
     skill_registry = SkillRegistry()
     for s in skill_defs:
         skill_registry.register(s)
 
-    # Wire into tool system
+    # 接入工具系统
     tools = ToolRegistry()
     skill_tool = SkillTool(skill_registry)
     tools.register(skill_tool)
 
-    # Query a skill
+    # 查询一个 skill
     ctx = ToolExecutionContext(cwd=Path("."))
     result = await skill_tool.execute(
         type("Args", (), {"name": "sql-optimization"})(),
@@ -238,7 +238,7 @@ async def demo():
 asyncio.run(demo())
 ```
 
-## Testing
+## 测试
 
 ```python
 import pytest

@@ -1,18 +1,18 @@
-# How to Implement a Custom Sandbox Backend
+# 如何实现自定义 Sandbox Backend
 
-## Goal
+## 目标
 
-Replace the default SRTSandboxBackend with your own — a container-based sandbox, a remote execution service, or a simplified local filesystem.
+将默认的 SRTSandboxBackend 替换为你自己的实现——基于容器的 sandbox、远程执行服务，或简化的本地文件系统。
 
-## Prerequisites
+## 前置条件
 
-- Understanding of the SandboxBackend Protocol (8 methods)
+- 了解 SandboxBackend Protocol（8 个方法）
 
-## Step by Step
+## 分步指南
 
-### 1. Understand the Protocol
+### 1. 理解 Protocol
 
-The full SandboxBackend Protocol in `llm_harness.adapters.sandbox.backend`:
+`llm_harness.adapters.sandbox.backend` 中定义的完整 SandboxBackend Protocol：
 
 ```python
 class SandboxBackend(Protocol):
@@ -27,9 +27,9 @@ class SandboxBackend(Protocol):
                       env: dict | None = None, timeout: int = 60) -> ExecResult: ...
 ```
 
-### 2. Implement All 8 Methods
+### 2. 实现全部 8 个方法
 
-Here's a minimal local-filesystem sandbox — path-enforced like SRTSandboxBackend but without the srt OS wrapper:
+以下是一个最小化的本地文件系统 sandbox——与 SRTSandboxBackend 一样进行路径限制，但没有 srt OS 包装层：
 
 ```python
 import re, asyncio, shlex
@@ -102,14 +102,14 @@ class LocalSandboxBackend:
             return ExecResult(output="Command timed out", exit_code=-1, is_error=True)
 ```
 
-### 3. Inject into Harness
+### 3. 注入到 Harness
 
 ```python
 sandbox = LocalSandboxBackend("/workspace")
 harness = Harness(provider=..., model=..., tools=..., sandbox=sandbox)
 ```
 
-## Testing
+## 测试
 
 ```python
 @pytest.mark.asyncio

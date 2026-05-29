@@ -1,16 +1,16 @@
-# How to Implement a Custom Memory Backend
+# 如何实现自定义 Memory Backend
 
-## Goal
+## 目标
 
-Replace the default TencentDBMemoryBackend with your own — Redis, PostgreSQL, or a custom service.
+将默认的 TencentDBMemoryBackend 替换为你自己的实现——Redis、PostgreSQL，或自定义服务。
 
-## Prerequisites
+## 前置条件
 
-- Understanding of MemoryBackend Protocol (5 methods)
+- 了解 MemoryBackend Protocol（5 个方法）
 
-## Step by Step
+## 分步指南
 
-### 1. Understand the Protocol
+### 1. 理解 Protocol
 
 ```python
 class MemoryBackend(Protocol):
@@ -22,7 +22,7 @@ class MemoryBackend(Protocol):
                           provider: Any = None, model: str = "") -> bool: ...
 ```
 
-### 2. Implement RedisMemoryBackend
+### 2. 实现 RedisMemoryBackend
 
 ```python
 import json
@@ -57,14 +57,14 @@ class RedisMemoryBackend:
         await self._redis.close()
 ```
 
-### 3. Inject into Harness
+### 3. 注入到 Harness
 
 ```python
 memory = RedisMemoryBackend("redis://localhost:6379")
 harness = Harness(provider=..., model=..., tools=..., sandbox=..., memory=memory)
 ```
 
-## Testing
+## 测试
 
 ```python
 import fakeredis.aioredis

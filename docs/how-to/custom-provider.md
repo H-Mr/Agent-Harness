@@ -1,19 +1,19 @@
-# How to Add a Custom LLM Provider
+# 如何添加自定义 LLM Provider
 
-## Goal
+## 目标
 
-Add your own LLM provider -- a private gateway, local model, or an API not in the built-in registry.
+添加你自己的 LLM provider——私有网关、本地模型，或不在内置注册表中的 API。
 
-## Prerequisites
+## 前置条件
 
-- Working llm-harness installation
-- Your provider's API endpoint URL
+- 可用的 llm-harness 安装
+- 你的 provider 的 API endpoint URL
 
-## Approach A: Use ProviderSpec (OpenAI-compatible APIs)
+## 方式 A：使用 ProviderSpec（兼容 OpenAI 的 API）
 
-If your provider speaks OpenAI-compatible API format:
+如果你的 provider 使用兼容 OpenAI 的 API 格式：
 
-### 1. Create a ProviderSpec
+### 1. 创建 ProviderSpec
 
 ```python
 from llm_harness.adapters.providers.registry import ProviderSpec, PROVIDERS, instantiate_provider
@@ -27,23 +27,23 @@ my_spec = ProviderSpec(
     default_api_base="https://api.my-gateway.com/v1",
 )
 
-# Register (before detecting provider)
+# 注册（在检测 provider 之前）
 from llm_harness.adapters.providers import registry
 registry.PROVIDERS = registry.PROVIDERS + (my_spec,)
 ```
 
-### 2. Use
+### 2. 使用
 
 ```python
 spec = registry.detect_provider(model="my-gateway-model", api_base="https://api.my-gateway.com/v1")
 provider = instantiate_provider(spec)
 ```
 
-## Approach B: Subclass LLMProvider (non-OpenAI APIs)
+## 方式 B：继承 LLMProvider（非 OpenAI API）
 
-For providers with non-OpenAI-compatible APIs:
+适用于非兼容 OpenAI 的 API 的 provider：
 
-### 1. Subclass LLMProvider
+### 1. 继承 LLMProvider
 
 ```python
 from llm_harness.adapters.providers.base import LLMProvider, LLMResponse, ToolCallRequest
@@ -55,30 +55,30 @@ class MyCustomProvider(LLMProvider):
 
     @property
     def api_format(self) -> str:
-        return "openai"  # or "anthropic"
+        return "openai"  # 或 "anthropic"
 
     async def chat(self, messages, tools=None, model=None, max_tokens=4096,
                    temperature=0.7, reasoning_effort=None, tool_choice=None) -> LLMResponse:
-        # 1. Convert messages to your API format
-        # 2. Make the API call
-        # 3. Parse response into LLMResponse
+        # 1. 将 messages 转换为你 API 的格式
+        # 2. 发起 API 调用
+        # 3. 将响应解析为 LLMResponse
         return LLMResponse(content="Response from custom provider", finish_reason="stop")
 
     def get_default_model(self) -> str:
         return self.default_model
 ```
 
-### 2. Implement chat_stream for streaming support
+### 2. 实现 chat_stream 以支持流式响应
 
-Override `chat_stream` if your API supports streaming responses:
+如果你的 API 支持流式响应，请覆写 `chat_stream`：
 
 ```python
 async def chat_stream(self, messages, tools=None, model=None, ..., on_content_delta=None) -> LLMResponse:
-    # Stream from your API, call on_content_delta for each text chunk
+    # 从你的 API 流式获取数据，对每个文本块调用 on_content_delta
     ...
 ```
 
-## Testing
+## 测试
 
 ```python
 @pytest.mark.asyncio

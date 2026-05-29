@@ -1,39 +1,39 @@
-# How to Configure Lifecycle Hooks
+# 如何配置生命周期 Hook
 
-## Goal
+## 目标
 
-Attach custom logic to agent lifecycle events -- session start/end, pre-tool-use, and post-tool-use -- using shell commands, HTTP calls, or LLM-based validation.
+将自定义逻辑挂接到 agent 的生命周期事件中——会话开始/结束、工具使用前、工具使用后——支持 shell 命令、HTTP 调用或基于 LLM 的验证。
 
-## Prerequisites
+## 前置条件
 
-- Working llm-harness installation
-- Understanding of the harness config model
+- 可用的 llm-harness 安装
+- 了解 harness 配置模型
 
-## Step by Step
+## 分步指南
 
-### 1. Understand the Hook Model
+### 1. 理解 Hook 模型
 
-Four hook types are available in `llm_harness.extensions.hooks.schemas`:
+`llm_harness.extensions.hooks.schemas` 中提供了四种 hook 类型：
 
-| Hook Type | Description |
+| Hook 类型 | 说明 |
 |---|---|
-| `CommandHookDefinition` | Runs a shell command. Useful for logging, metrics, or sidecar processes. |
-| `HttpHookDefinition` | POSTs the event payload to a URL. Useful for webhook integrations. |
-| `PromptHookDefinition` | Asks the LLM to validate a condition. The model must respond with `{"ok": true}` or `{"ok": false, "reason": "..."}`. |
-| `AgentHookDefinition` | Like prompt, but with a system instruction encouraging deeper reasoning. Default timeout is 60s instead of 30s. |
+| `CommandHookDefinition` | 运行 shell 命令。适用于日志记录、指标收集或 sidecar 进程。 |
+| `HttpHookDefinition` | 将事件负载 POST 到指定 URL。适用于 webhook 集成。 |
+| `PromptHookDefinition` | 要求 LLM 验证某个条件。模型必须返回 `{"ok": true}` 或 `{"ok": false, "reason": "..."}`。 |
+| `AgentHookDefinition` | 类似于 prompt hook，但使用系统指令鼓励更深层次的推理。默认超时时间 60s 而非 30s。 |
 
-Four events are available in `HookEvent`:
+`HookEvent` 中提供了四个事件：
 
-- `SESSION_START` -- fires when a session begins
-- `SESSION_END` -- fires when a session ends
-- `PRE_TOOL_USE` -- fires before a tool executes (can **block** the tool)
-- `POST_TOOL_USE` -- fires after a tool executes (informational)
+- `SESSION_START` —— 会话开始时触发
+- `SESSION_END` —— 会话结束时触发
+- `PRE_TOOL_USE` —— 工具执行前触发（可以**阻止**工具执行）
+- `POST_TOOL_USE` —— 工具执行后触发（仅通知）
 
-Each hook carries a `matcher` (fnmatch pattern) to filter which tools trigger it, and a `block_on_failure` flag that controls whether a failure stops the pipeline.
+每个 hook 带有 `matcher`（fnmatch 模式）来过滤哪些工具触发它，以及 `block_on_failure` 标志来控制失败是否停止流水线。
 
-### 2. Define Hooks in Config
+### 2. 在配置中定义 Hook
 
-Hooks live under the `hooks` key in your harness settings:
+Hook 位于 harness 设置的 `hooks` 键下：
 
 ```python
 from llm_harness.config.schema import HarnessConfig
@@ -84,24 +84,24 @@ config = HarnessConfig(
 )
 ```
 
-### 3. Load Hooks Programmatically
+### 3. 以编程方式加载 Hook
 
-Use `load_hook_registry` to convert a settings object into a `HookRegistry`:
+使用 `load_hook_registry` 将设置对象转换为 `HookRegistry`：
 
 ```python
 from llm_harness.extensions.hooks import load_hook_registry, HookRegistry
 
 registry: HookRegistry = load_hook_registry(config)
 print(registry.summary())
-# Example output:
+# 示例输出：
 #   pre_tool_use:
 #     - prompt matcher=exec*: ...
 #     - http matcher=*: ...
 ```
 
-### 4. Execute Hooks with HookExecutor
+### 4. 使用 HookExecutor 执行 Hook
 
-Create a `HookExecutor` with a `HookExecutionContext` and fire events:
+创建带有 `HookExecutionContext` 的 `HookExecutor` 并触发事件：
 
 ```python
 from pathlib import Path
@@ -110,13 +110,13 @@ from llm_harness.extensions.hooks.events import HookEvent
 
 context = HookExecutionContext(
     cwd=Path("/workspace"),
-    provider=provider,       # required for prompt/agent hooks
+    provider=provider,       # prompt/agent hook 必须提供
     default_model="deepseek-chat",
 )
 
 executor = HookExecutor(registry, context)
 
-# Fire pre-tool-use for an exec call
+# 为 exec 调用触发 tool-use-pre 事件
 result = await executor.execute(
     HookEvent.PRE_TOOL_USE,
     payload={
@@ -127,16 +127,16 @@ result = await executor.execute(
 )
 
 if result.blocked:
-    print(f"Blocked: {result.reason}")
+    print(f"被阻止: {result.reason}")
 else:
-    print("All hooks passed, tool may proceed")
+    print("所有 hook 通过，工具可以继续执行")
 ```
 
-The `payload` dict is serialized as JSON and injected into command and prompt templates via the `$ARGUMENTS` placeholder.
+`payload` dict 被序列化为 JSON，并通过 `$ARGUMENTS` 占位符注入到命令和 prompt 模板中。
 
-### 5. Example: PreToolUse Validation
+### 5. 示例：PreToolUse 验证
 
-A common pattern is to validate dangerous tool calls before they execute. Here is a self-contained example using a prompt hook:
+一个常见的模式是在危险工具调用执行前进行验证。以下是一个使用 prompt hook 的完整示例：
 
 ```python
 import asyncio
@@ -152,7 +152,7 @@ from llm_harness.adapters.providers.openai_compat_provider import OpenAICompatPr
 async def validate_tool_use():
     provider = OpenAICompatProvider(api_key="...", api_base="https://api.deepseek.com")
 
-    # Build registry
+    # 构建 registry
     registry = HookRegistry()
     registry.register(
         HookEvent.PRE_TOOL_USE,
@@ -176,7 +176,7 @@ async def validate_tool_use():
     )
     executor = HookExecutor(registry, context)
 
-    # Should be blocked
+    # 应被阻止
     result = await executor.execute(
         HookEvent.PRE_TOOL_USE,
         payload={
@@ -184,9 +184,9 @@ async def validate_tool_use():
             "arguments": {"command": "rm -rf /"},
         },
     )
-    print("Blocked?", result.blocked)   # True
+    print("被阻止?", result.blocked)   # True
 
-    # Should pass
+    # 应通过
     result = await executor.execute(
         HookEvent.PRE_TOOL_USE,
         payload={
@@ -194,31 +194,31 @@ async def validate_tool_use():
             "arguments": {"command": "ls -la"},
         },
     )
-    print("Blocked?", result.blocked)   # False
+    print("被阻止?", result.blocked)   # False
 
 asyncio.run(validate_tool_use())
 ```
 
-### 6. Control Matcher and Blocking Behavior
+### 6. 控制 Matcher 和阻塞行为
 
-The `matcher` field uses fnmatch syntax against the `tool_name` in the payload. `block_on_failure` determines whether a hook failure stops subsequent hooks and blocks the event:
+`matcher` 字段针对 payload 中的 `tool_name` 使用 fnmatch 语法。`block_on_failure` 决定 hook 失败是否停止后续 hook 并阻塞事件：
 
 ```python
-# Block any rm command (catches exec, glob rm, etc.)
+# 阻止任何 rm 命令（匹配 exec、glob rm 等）
 CommandHookDefinition(
     command="python /scripts/audit_rm.py $ARGUMENTS",
     matcher="*rm*",
     block_on_failure=True,
 )
 
-# Non-blocking audit trail
+# 非阻塞审计跟踪
 HttpHookDefinition(
     url="http://audit:8080/event",
-    block_on_failure=False,  # fire-and-forget
+    block_on_failure=False,  # 即发即忘
 )
 ```
 
-## Complete Example
+## 完整示例
 
 ```python
 import asyncio
@@ -232,7 +232,7 @@ from llm_harness.extensions.hooks.executor import HookExecutor, HookExecutionCon
 async def main():
     registry = HookRegistry()
 
-    # Log session start
+    # 记录会话开始
     registry.register(
         HookEvent.SESSION_START,
         CommandHookDefinition(
@@ -241,7 +241,7 @@ async def main():
         ),
     )
 
-    # Block dangerous exec calls
+    # 阻止危险的 exec 调用
     registry.register(
         HookEvent.PRE_TOOL_USE,
         CommandHookDefinition(
@@ -256,7 +256,7 @@ async def main():
         ),
     )
 
-    # Audit log via HTTP
+    # 通过 HTTP 记录审计日志
     registry.register(
         HookEvent.POST_TOOL_USE,
         HttpHookDefinition(
@@ -265,7 +265,7 @@ async def main():
         ),
     )
 
-    # Run hooks
+    # 运行 hook
     context = HookExecutionContext(cwd=Path("."))
     executor = HookExecutor(registry, context)
 
@@ -274,7 +274,7 @@ async def main():
         HookEvent.PRE_TOOL_USE,
         payload={"tool_name": "exec", "arguments": {"command": "rm -rf /data"}},
     )
-    print("Blocked?" if result.blocked else "Allowed")
+    print("被阻止?" if result.blocked else "已允许")
     await executor.execute(
         HookEvent.POST_TOOL_USE,
         payload={"tool_name": "exec", "result": "ok"},
@@ -283,7 +283,7 @@ async def main():
 asyncio.run(main())
 ```
 
-## Testing
+## 测试
 
 ```python
 import pytest
@@ -311,7 +311,7 @@ async def test_pre_tool_use_blocking():
     )
     assert result.blocked is True
 
-    # Non-matching tool should not trigger the hook
+    # 不匹配的工具不应触发 hook
     result = await executor.execute(
         HookEvent.PRE_TOOL_USE,
         payload={"tool_name": "safe_tool"},

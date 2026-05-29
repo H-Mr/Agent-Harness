@@ -1,19 +1,19 @@
-# How to Create a Custom Tool
+# 如何创建自定义工具
 
-## Goal
+## 目标
 
-Create a custom tool that extends the agent's capabilities beyond the 15 built-in tools.
+创建一个自定义工具，扩展 agent 在内置 15 个工具之外的能力。
 
-## Prerequisites
+## 前置条件
 
-- Working llm-harness installation
-- Understanding of Pydantic BaseModel for input schemas
+- 可用的 llm-harness 安装
+- 了解 Pydantic BaseModel 用于输入 schema
 
-## Step by Step
+## 分步指南
 
-### 1. Define the Input Model
+### 1. 定义输入模型
 
-Create a Pydantic model for your tool's arguments. Use `Field(description=...)` for each field -- the LLM uses these descriptions to decide how to call your tool.
+为你的工具参数创建一个 Pydantic 模型。使用 `Field(description=...)` 描述每个字段——LLM 会根据这些描述来决定如何调用你的工具。
 
 ```python
 from pydantic import BaseModel, Field
@@ -22,9 +22,9 @@ class TimezoneInput(BaseModel):
     city: str = Field(description="City name, e.g. 'Beijing' or 'New York'")
 ```
 
-### 2. Subclass BaseTool
+### 2. 继承 BaseTool
 
-Override `name`, `description`, and `input_model` as ClassVar. Implement `execute()` and `is_read_only()`.
+将 `name`、`description` 和 `input_model` 设为 ClassVar。实现 `execute()` 和 `is_read_only()`。
 
 ```python
 from typing import ClassVar
@@ -36,7 +36,7 @@ class TimezoneTool(BaseTool):
     input_model: ClassVar[type[BaseModel]] = TimezoneInput
 
     async def execute(self, args: TimezoneInput, ctx: ToolExecutionContext) -> ToolResult:
-        # Your logic here
+        # 在这里编写你的逻辑
         return ToolResult(output=f"The time in {args.city} is 14:30 UTC")
 
     @staticmethod
@@ -44,7 +44,7 @@ class TimezoneTool(BaseTool):
         return True
 ```
 
-### 3. Register the Tool
+### 3. 注册工具
 
 ```python
 from llm_harness.core.tools.base import ToolRegistry
@@ -53,7 +53,7 @@ tools = ToolRegistry()
 tools.register(TimezoneTool())
 ```
 
-Or register via ToolFactory:
+或者通过 ToolFactory 注册：
 
 ```python
 from llm_harness.core.tools.factory import ToolFactory
@@ -62,7 +62,7 @@ factory = ToolFactory(sandbox=sandbox)
 factory.register("timezone", lambda: TimezoneTool())
 ```
 
-### 4. Use with an Agent
+### 4. 与 Agent 一起使用
 
 ```python
 harness = Harness(provider=provider, model="deepseek-chat", tools=tools, sandbox=sandbox)
@@ -70,7 +70,7 @@ agent = harness.create_agent()
 result = await agent.process(msg, session=session, cwd=cwd)
 ```
 
-## Complete Example
+## 完整示例
 
 ```python
 import os, asyncio
@@ -117,7 +117,7 @@ async def main():
 asyncio.run(main())
 ```
 
-## Testing
+## 测试
 
 ```python
 import pytest
