@@ -7,6 +7,8 @@ from typing import Any
 
 @dataclass
 class InboundMessage:
+    """Message arriving from a chat channel, destined for the agent."""
+
     channel: str
     sender_id: str
     chat_id: str
@@ -23,6 +25,8 @@ class InboundMessage:
 
 @dataclass
 class OutboundMessage:
+    """Message from the agent to a chat channel for delivery."""
+
     channel: str
     chat_id: str
     content: str

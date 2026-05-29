@@ -70,6 +70,7 @@ class ToolFactory:
         self._builders[name] = builder
 
     def build(self, name: str) -> BaseTool | None:
+        """Construct and return a tool by name, or None if unknown or missing a required backend."""
         if name in _SANDBOX_TOOLS and self._sandbox is None:
             logger.warning("Refusing to build %s: no sandbox configured", name)
             return None

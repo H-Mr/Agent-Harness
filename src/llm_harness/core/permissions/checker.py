@@ -48,10 +48,10 @@ class PermissionDecision:
 
 @dataclass(frozen=True)
 class PathRule:
-    """A glob-based path permission rule."""
+    """Glob-based path permission rule — allow or deny access to matching file paths."""
 
     pattern: str
-    allow: bool  # True = allow, False = deny
+    allow: bool
 
 
 class PermissionChecker:

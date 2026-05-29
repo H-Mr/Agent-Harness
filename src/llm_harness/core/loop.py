@@ -36,6 +36,8 @@ class EventCallback(Protocol):
 
 @dataclass
 class TurnResult:
+    """Result of a single agent turn — final content, tools used, and full message history."""
+
     final_content: str | None = None
     tools_used: list[str] = field(default_factory=list)
     messages: list[dict[str, Any]] = field(default_factory=list)
@@ -43,6 +45,12 @@ class TurnResult:
 
 
 class AgentLoop:
+    """Drives the ReAct loop: LLM call, tool execution, repeat until done.
+
+    Behavior is injected via callbacks (on_build_context, on_tool_check, on_error)
+    so the loop is pure and testable without subclassing.
+    """
+
     TOOL_RESULT_MAX_CHARS = 16_000
 
     def __init__(

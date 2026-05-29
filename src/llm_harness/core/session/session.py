@@ -9,6 +9,8 @@ from typing import Any
 
 @dataclass
 class Session:
+    """Mutable conversation session — message history, metadata, and consolidation cursor."""
+
     key: str
     messages: list[dict[str, Any]] = field(default_factory=list)
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
@@ -27,11 +29,13 @@ class Session:
         return self.key.split(":", 1)[1] if ":" in self.key else None
 
     def add_message(self, role: str, content: str, **kwargs: Any) -> None:
+        """Append a message to the session history with an auto-generated timestamp."""
         msg = {"role": role, "content": content, "timestamp": datetime.now(timezone.utc).isoformat(), **kwargs}
         self.messages.append(msg)
         self.updated_at = datetime.now(timezone.utc)
 
     def get_history(self, max_messages: int = 500) -> list[dict[str, Any]]:
+        """Return unconsolidated messages, sliced to the last *max_messages* and aligned to the first user message."""
         unconsolidated = self.messages[self.last_consolidated:]
         if max_messages <= 0:
             return []
@@ -54,6 +58,7 @@ class Session:
         return result
 
     def remove_before(self, idx: int) -> None:
+        """Drop messages before *idx* and adjust the consolidation cursor."""
         if idx <= 0:
             return
         self.messages = self.messages[idx:]
@@ -61,5 +66,6 @@ class Session:
         self.updated_at = datetime.now(timezone.utc)
 
     def to_state(self) -> dict[str, Any]:
+        """Serialize session to a dictionary for persistence or transfer."""
         return {"messages": self.messages, "metadata": self.metadata,
                 "last_consolidated": self.last_consolidated}

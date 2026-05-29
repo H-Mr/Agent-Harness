@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 class Mailbox:
+    """File-based message mailbox for leader-worker communication via JSON files on disk."""
+
     def __init__(self, base_dir: Path):
         self.base_dir = Path(base_dir)
         self.base_dir.mkdir(parents=True, exist_ok=True)

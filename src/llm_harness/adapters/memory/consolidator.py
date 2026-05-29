@@ -26,6 +26,8 @@ def estimate_message_tokens(message: dict) -> int:
 
 
 class MemoryConsolidator:
+    """Policy-driven memory consolidation — archives session messages to a persistent backend when token budgets are exceeded."""
+
     MAX_CONSOLIDATION_ROUNDS = 5
 
     def __init__(

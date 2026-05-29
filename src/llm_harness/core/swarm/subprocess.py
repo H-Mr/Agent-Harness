@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 
 
 class SubprocessBackend:
+    """Spawns sub-agents as independent OS processes, communicating via the message bus and file-based mailboxes."""
+
     def __init__(self, bus: MessageBus, workspace_root: Path | None = None, mailbox: Mailbox | None = None, *, emitter: EventEmitter | None = None):
         self.bus = bus
         self._workspace_root = Path(workspace_root) if workspace_root else Path.cwd()
