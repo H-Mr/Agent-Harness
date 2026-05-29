@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
 from pathlib import Path
 from typing import Any
 
 from llm_harness.core.bus.events import InboundMessage, OutboundMessage
-from llm_harness.core.loop import AgentLoop, TurnResult
+from llm_harness.core.loop import AgentLoop, StreamEvent, TurnResult
 from llm_harness.core.session.session import Session
 from llm_harness.adapters.memory.consolidator import MemoryConsolidator
 from llm_harness.adapters.observability.emit_helpers import EventEmitter
@@ -65,6 +66,48 @@ class Agent:
             )
 
         return result
+
+    async def process_stream(
+        self,
+        msg: InboundMessage,
+        *,
+        session: Session,
+        cwd: Path,
+        account: str = "",
+    ) -> AsyncGenerator[StreamEvent, None]:
+        """Async-generator variant of :meth:`process`.
+
+        Yields :class:`StreamEvent` items so the caller can stream text
+        deltas, tool invocations, and results to an SSE / WebSocket client.
+        Always ends with ``StreamEvent(type="done", ...)``.
+        """
+        if self._emitter:
+            await self._emitter.send(SessionOpened(session_key=session.key))
+
+        history = session.get_history()
+        session.add_message("user", msg.content)
+
+        if self._consolidator:
+            await self._consolidator.maybe_consolidate(session, account=account)
+
+        done_event = None
+        async for event in self._loop.run_stream(msg, history, cwd=cwd):
+            if event.type == "done":
+                done_event = event
+            yield event
+
+        # Persist the turn from the final done event's message payload
+        if done_event and done_event._messages:
+            result = TurnResult(
+                messages=done_event._messages,
+                new_messages_start=done_event._new_messages_start,
+            )
+            self._save_turn(session, result)
+
+        if self._emitter:
+            await self._emitter.send(
+                SessionClosed(session_key=session.key, message_count=len(session.messages))
+            )
 
     async def close(self) -> None:
         """Release resources held by sub-components (consolidator locks, etc.)."""
