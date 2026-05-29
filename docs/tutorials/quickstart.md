@@ -1,20 +1,20 @@
-# Quickstart
+# 快速入门
 
-Get an Agent running in 5 minutes.
+在 5 分钟内启动一个 Agent。
 
-## 1. Install
+## 1. 安装
 
 ```bash
 pip install llm-harness[openai]
 ```
 
-## 2. Set your API key
+## 2. 设置 API 密钥
 
 ```bash
 export LLM_HARNESS_API_KEY=sk-your-key-here
 ```
 
-## 3. Create the Agent
+## 3. 创建 Agent
 
 ```python
 import os
@@ -29,13 +29,13 @@ from llm_harness.core.tools.base import ToolRegistry
 from llm_harness.core.tools.factory import ToolFactory
 
 async def main():
-    # 1. Create provider
+    # 1. 创建 provider
     provider = OpenAICompatProvider(
         api_key=os.environ["LLM_HARNESS_API_KEY"],
         api_base="https://api.deepseek.com",
     )
 
-    # 2. Set up sandbox and tools
+    # 2. 设置沙箱和工具
     sandbox = SRTSandboxBackend(Path("./workspace"))
     factory = ToolFactory(sandbox=sandbox)
     tools = ToolRegistry()
@@ -44,7 +44,7 @@ async def main():
         if tool:
             tools.register(tool)
 
-    # 3. Assemble
+    # 3. 组装
     harness = Harness(
         provider=provider,
         model="deepseek-chat",
@@ -53,7 +53,7 @@ async def main():
     )
     agent = harness.create_agent()
 
-    # 4. Create a session and send a message
+    # 4. 创建会话并发送消息
     session = Session(key="quickstart:chat1")
     msg = InboundMessage(channel="cli", sender_id="user", chat_id="chat1",
                          content="What is 2+2?")
@@ -63,14 +63,14 @@ async def main():
 asyncio.run(main())
 ```
 
-## 4. Run it
+## 4. 运行
 
 ```bash
 python quickstart.py
 # → 2+2 equals 4.
 ```
 
-## Next Steps
+## 下一步
 
-- [7-Day Mastery Path](7-day-mastery.md) — structured learning
-- [First Agent](first-agent.md) — deeper dive with more tools
+- [7 天掌握路线](7-day-mastery.md) —— 系统化学习
+- [首个 Agent](first-agent.md) —— 深入探索更多工具

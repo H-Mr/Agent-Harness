@@ -1,8 +1,8 @@
-# Your First Agent
+# 你的第一个 Agent
 
-A complete example: file operations, web search, and multi-turn conversation.
+一个完整示例：文件操作、网络搜索和多轮对话。
 
-## Setup
+## 设置
 
 ```python
 import os, asyncio, tempfile
@@ -38,13 +38,13 @@ async def main():
     agent = harness.create_agent()
     session = Session(key="demo:chat1")
 
-    # Turn 1: create a file
+    # 第一轮：创建文件
     msg1 = InboundMessage("cli", "alice", "c1",
         'Create a Python file called hello.py that prints "Hello from llm-harness!"')
     r1 = await agent.process(msg1, session=session, cwd=ws)
     print("Turn 1:", r1.final_content[:100])
 
-    # Turn 2: run it
+    # 第二轮：运行它
     msg2 = InboundMessage("cli", "alice", "c1", "Now run hello.py and tell me the output")
     r2 = await agent.process(msg2, session=session, cwd=ws)
     print("Turn 2:", r2.final_content[:100])
@@ -55,9 +55,9 @@ async def main():
 asyncio.run(main())
 ```
 
-## What Happens
+## 执行过程
 
-1. `Harness` assembles the Agent with the provider, tools, sandbox, and system prompt
-2. Turn 1: Agent receives the message → LLM decides to use `write_file` → tool executes → LLM confirms
-3. Turn 2: Agent receives the follow-up → LLM uses `exec` to run `python hello.py` → LLM reports the output
-4. Session accumulates all messages across turns
+1. `Harness` 将 provider、工具、沙箱和系统提示组装成 Agent
+2. 第一轮：Agent 收到消息 → LLM 决定使用 `write_file` → 工具执行 → LLM 确认
+3. 第二轮：Agent 收到后续消息 → LLM 使用 `exec` 运行 `python hello.py` → LLM 报告输出
+4. Session 累积所有轮次的消息
