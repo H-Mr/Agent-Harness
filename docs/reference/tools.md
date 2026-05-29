@@ -1,11 +1,10 @@
 # Tools
 
-The tool system provides the interface between LLM tool-call requests and
-actual execution.
+工具系统提供了 LLM 工具调用请求与实际执行之间的接口。
 
-Source: `llm_harness.core.tools`
+源码位置：`llm_harness.core.tools`
 
-## Core Classes
+## 核心类
 
 ### BaseTool (ABC)
 
@@ -38,8 +37,8 @@ class ToolRegistry:
 ```python
 @dataclass
 class ToolExecutionContext:
-    cwd: Path                              # working directory
-    metadata: dict[str, Any]               # session_key, account, etc.
+    cwd: Path                              # 工作目录
+    metadata: dict[str, Any]               # session_key、account 等
 ```
 
 ### ToolResult
@@ -47,9 +46,9 @@ class ToolExecutionContext:
 ```python
 @dataclass(frozen=True)
 class ToolResult:
-    output: str                            # tool output text
-    is_error: bool = False                 # whether execution failed
-    metadata: dict[str, Any]               # arbitrary metadata
+    output: str                            # 工具输出文本
+    is_error: bool = False                 # 执行是否失败
+    metadata: dict[str, Any]               # 任意元数据
 ```
 
 ### ToolFactory
@@ -61,38 +60,38 @@ class ToolFactory:
     def build(self, name: str) -> BaseTool | None: ...
 ```
 
-## Built-in Tools
+## 内置工具
 
-| Tool | Name | Dependencies | Read-Only |
+| 工具 | 名称 | 依赖 | 只读 |
 |------|------|-------------|-----------|
-| ReadFileTool | `read_file` | sandbox | Yes |
-| WriteFileTool | `write_file` | sandbox | No |
-| EditFileTool | `edit_file` | sandbox | No |
-| ExecTool | `exec` | sandbox | No |
-| GlobTool | `glob` | sandbox | Yes |
-| GrepTool | `grep` | sandbox | Yes |
-| WebSearchTool | `web_search` | none | Yes |
-| WebFetchTool | `web_fetch` | none | Yes |
-| MemoryReadTool | `memory_read` | memory | Yes |
-| MemoryWriteTool | `memory_write` | memory | No |
-| AgentTool | `agent` | swarm, bus | No |
-| SendMessageTool | `send_message` | swarm | No |
-| TaskStopTool | `task_stop` | swarm | No |
-| SkillTool | `skill` | skills | Yes |
-| AskUserQuestionTool | `ask_user_question` | none | No |
+| ReadFileTool | `read_file` | sandbox | 是 |
+| WriteFileTool | `write_file` | sandbox | 否 |
+| EditFileTool | `edit_file` | sandbox | 否 |
+| ExecTool | `exec` | sandbox | 否 |
+| GlobTool | `glob` | sandbox | 是 |
+| GrepTool | `grep` | sandbox | 是 |
+| WebSearchTool | `web_search` | 无 | 是 |
+| WebFetchTool | `web_fetch` | 无 | 是 |
+| MemoryReadTool | `memory_read` | memory | 是 |
+| MemoryWriteTool | `memory_write` | memory | 否 |
+| AgentTool | `agent` | swarm, bus | 否 |
+| SendMessageTool | `send_message` | swarm | 否 |
+| TaskStopTool | `task_stop` | swarm | 否 |
+| SkillTool | `skill` | skills | 是 |
+| AskUserQuestionTool | `ask_user_question` | 无 | 否 |
 
-## Implementing a Custom Tool
+## 实现自定义工具
 
 ```python
 from pydantic import BaseModel, Field
 from llm_harness.core.tools.base import BaseTool, ToolExecutionContext, ToolResult
 
 class GreetInput(BaseModel):
-    name: str = Field(description="Name to greet")
+    name: str = Field(description="要问候的名称")
 
 class GreetTool(BaseTool):
     name: ClassVar[str] = "greet"
-    description: ClassVar[str] = "Greet someone by name."
+    description: ClassVar[str] = "按名称问候某人。"
     input_model: ClassVar[type[BaseModel]] = GreetInput
 
     async def execute(self, args: GreetInput, ctx: ToolExecutionContext) -> ToolResult:

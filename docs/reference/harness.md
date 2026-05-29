@@ -1,12 +1,10 @@
 # Harness
 
-`Harness` is the **assembler** — it receives all dependencies, creates the
-`MemoryConsolidator` (if memory is configured), injects callbacks into
-`AgentLoop`, and returns a ready-to-use `Agent`.
+`Harness` 是 **组装器** — 它接收所有依赖项，创建 `MemoryConsolidator`（如果配置了 memory），将回调注入 `AgentLoop`，并返回一个可直接使用的 `Agent`。
 
-Source: `llm_harness.core.harness`
+源码位置：`llm_harness.core.harness`
 
-## Constructor
+## 构造函数
 
 ```python
 Harness(
@@ -26,22 +24,22 @@ Harness(
 )
 ```
 
-| Parameter | Type | Required | Description |
+| 参数 | 类型 | 必填 | 说明 |
 |-----------|------|----------|-------------|
-| `provider` | `LLMProvider` | Yes | LLM provider instance |
-| `model` | `str` | Yes | Model identifier |
-| `tools` | `ToolRegistry` | Yes | Tool registry with registered tools |
-| `sandbox` | `SandboxBackend` | Yes | Sandbox for file I/O and exec |
-| `memory` | `MemoryBackend` | No | Memory backend for consolidation |
-| `swarm` | `Any` | No | Sub-agent backend |
-| `permissions` | `PermissionChecker` | No | Permission checker |
-| `skills` | `SkillRegistry` | No | Skill registry (defaults to empty) |
-| `observability` | `ObservabilityBackend` | No | Event backend |
-| `system_prompt` | `str` | No | Custom system prompt (default: "You are a helpful AI assistant.") |
-| `context_window_tokens` | `int` | No | Context window size for consolidation |
-| `max_completion_tokens` | `int` | No | Max completion tokens for consolidation |
+| `provider` | `LLMProvider` | 是 | LLM provider 实例 |
+| `model` | `str` | 是 | 模型标识符 |
+| `tools` | `ToolRegistry` | 是 | 已注册工具的 ToolRegistry |
+| `sandbox` | `SandboxBackend` | 是 | 用于文件 I/O 和执行的沙箱 |
+| `memory` | `MemoryBackend` | 否 | 用于整合的 memory 后端 |
+| `swarm` | `Any` | 否 | 子代理后端 |
+| `permissions` | `PermissionChecker` | 否 | 权限检查器 |
+| `skills` | `SkillRegistry` | 否 | 技能注册表（默认为空） |
+| `observability` | `ObservabilityBackend` | 否 | 事件后端 |
+| `system_prompt` | `str` | 否 | 自定义系统提示（默认："You are a helpful AI assistant."） |
+| `context_window_tokens` | `int` | 否 | 整合时的上下文窗口大小 |
+| `max_completion_tokens` | `int` | 否 | 整合时的最大补全令牌数 |
 
-## Methods
+## 方法
 
 ### create_agent()
 
@@ -49,30 +47,28 @@ Harness(
 def create_agent(self) -> Agent
 ```
 
-Creates and returns a configured `Agent` instance. The returned Agent has:
-- An `AgentLoop` with callbacks wired to `_build_system`, permissions, and error logging
-- A `MemoryConsolidator` (if `memory` was provided)
-- An `EventEmitter` (if `observability` was provided)
+创建并返回一个已配置的 `Agent` 实例。返回的 Agent 包含：
+- 一个 `AgentLoop`，其回调连接到 `_build_system`、权限和错误日志记录
+- 一个 `MemoryConsolidator`（如果提供了 `memory`）
+- 一个 `EventEmitter`（如果提供了 `observability`）
 
-## Internal Methods
+## 内部方法
 
 ### _build_system(msg)
 
-Assembles the system prompt from:
-1. `system_prompt` (or default)
-2. Current UTC time
-3. Available sub-agent definitions (from swarm)
-4. Available skills (from skill registry)
+从以下部分组装系统提示：
+1. `system_prompt`（或默认值）
+2. 当前 UTC 时间
+3. 可用的子代理定义（来自 swarm）
+4. 可用的技能（来自 skill registry）
 
-Returns `[{"role": "system", "content": "..."}]`
+返回 `[{"role": "system", "content": "..."}]`
 
 ### _build_consolidator()
 
-Creates `MemoryConsolidator` with `context_window_tokens` and
-`max_completion_tokens` from the constructor. Called during `__init__`
-only if `memory` is provided.
+使用构造函数中的 `context_window_tokens` 和 `max_completion_tokens` 创建 `MemoryConsolidator`。仅在提供 `memory` 时在 `__init__` 期间调用。
 
-## Usage
+## 用法
 
 ```python
 from llm_harness import Harness

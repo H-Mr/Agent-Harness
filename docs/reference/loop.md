@@ -1,11 +1,10 @@
 # AgentLoop
 
-`AgentLoop` is the **ReAct skeleton** — the core loop that calls the LLM,
-checks for tool calls, executes tools, and assembles the message history.
+`AgentLoop` 是 **ReAct 骨架** — 核心循环，负责调用 LLM、检查工具调用、执行工具并组装消息历史。
 
-Source: `llm_harness.core.loop`
+源码位置：`llm_harness.core.loop`
 
-## Constructor
+## 构造函数
 
 ```python
 AgentLoop(
@@ -22,19 +21,19 @@ AgentLoop(
 )
 ```
 
-| Parameter | Type | Description |
+| 参数 | 类型 | 说明 |
 |-----------|------|-------------|
 | `provider` | `LLMProvider` | LLM provider |
-| `tools` | `ToolRegistry` | Tool registry |
-| `model` | `str` | Model identifier |
-| `on_build_context` | `BuildContextCallback` | Assembles messages for the LLM |
-| `on_tool_check` | `ToolCheckCallback` | Permission check before tool execution |
-| `on_error` | `ErrorCallback` | Error handler |
-| `on_event` | `EventCallback` or `None` | Legacy event callback |
-| `emitter` | `EventEmitter` or `None` | Structured observability |
-| `max_iterations` | `int` | Max ReAct iterations (default: 40) |
+| `tools` | `ToolRegistry` | 工具注册表 |
+| `model` | `str` | 模型标识符 |
+| `on_build_context` | `BuildContextCallback` | 为 LLM 组装消息 |
+| `on_tool_check` | `ToolCheckCallback` | 工具执行前的权限检查 |
+| `on_error` | `ErrorCallback` | 错误处理程序 |
+| `on_event` | `EventCallback` 或 `None` | 遗留事件回调 |
+| `emitter` | `EventEmitter` 或 `None` | 结构化可观测性 |
+| `max_iterations` | `int` | 最大 ReAct 迭代次数（默认：40） |
 
-## Callback Signatures
+## 回调签名
 
 ```python
 # BuildContextCallback
@@ -50,7 +49,7 @@ Callable[[exc: Exception, ctx: str], None]
 Callable[[event_type: str, payload: dict], Awaitable[None]]
 ```
 
-## Methods
+## 方法
 
 ### run(msg, history, *, cwd=None) → TurnResult
 
@@ -64,33 +63,33 @@ async def run(
 ) -> TurnResult
 ```
 
-Executes the ReAct loop:
+执行 ReAct 循环：
 
-1. Calls `on_build_context(msg, history)` → messages list
-2. Loop (up to `max_iterations`):
+1. 调用 `on_build_context(msg, history)` → 消息列表
+2. 循环（最多 `max_iterations` 次）：
    a. `provider.chat_with_retry(messages, tools, model)` → LLMResponse
-   b. If no tool_calls: append assistant message, return TurnResult
-   c. For each tool call: check → parse → execute → append result
-3. If max iterations reached: return "Max iterations reached."
+   b. 如果没有 tool_calls：追加 assistant 消息，返回 TurnResult
+   c. 对每个工具调用：检查 → 解析 → 执行 → 追加结果
+3. 如果达到最大迭代次数：返回 "Max iterations reached."
 
 ## TurnResult
 
 ```python
 @dataclass
 class TurnResult:
-    final_content: str | None = None       # LLM text response
-    tools_used: list[str] = field(default_factory=list)  # tool names invoked
-    messages: list[dict[str, Any]] = field(default_factory=list)  # full message history
-    new_messages_start: int = 0  # index where new messages begin
+    final_content: str | None = None       # LLM 文本响应
+    tools_used: list[str] = field(default_factory=list)  # 已调用的工具名称
+    messages: list[dict[str, Any]] = field(default_factory=list)  # 完整消息历史
+    new_messages_start: int = 0  # 新消息开始的索引
 ```
 
-## Constants
+## 常量
 
-- `TOOL_RESULT_MAX_CHARS = 16_000` — tool output truncation limit
+- `TOOL_RESULT_MAX_CHARS = 16_000` — 工具输出截断限制
 
-## Usage
+## 用法
 
-Direct usage (bypassing Harness):
+直接使用（绕过 Harness）：
 
 ```python
 loop = AgentLoop(

@@ -1,8 +1,8 @@
 # Events
 
-Structured observability events emitted throughout the agent lifecycle.
+在代理生命周期中发射的结构化可观测性事件。
 
-Source: `llm_harness.adapters.observability`
+源码位置：`llm_harness.adapters.observability`
 
 ## EventEmitter
 
@@ -24,30 +24,30 @@ class DefaultObservabilityBackend:
     async def unsubscribe(self, event_type: str, handler: EventHandler) -> None: ...
 ```
 
-## Event Types
+## 事件类型
 
-### Loop Events
+### 循环事件
 
-| Event | Key | Payload | Emission Point |
+| 事件 | 键 | 载荷 | 发射点 |
 |-------|-----|---------|----------------|
-| `AssistantTextDelta` | `assistant:delta` | `text` | Streaming token |
-| `AssistantTurnComplete` | `assistant:complete` | `content`, `usage` | Turn finished |
-| `ToolExecutionStarted` | `tool:executing` | `tool_name`, `tool_input` | Before tool runs |
-| `ToolExecutionCompleted` | `tool:completed` | `tool_name`, `output`, `is_error`, `duration_ms` | After tool runs |
-| `ErrorEvent` | `error` | `message`, `recoverable` | Error occurred |
-| `StatusEvent` | — | `message` | Status update |
+| `AssistantTextDelta` | `assistant:delta` | `text` | 流式令牌 |
+| `AssistantTurnComplete` | `assistant:complete` | `content`、`usage` | 回合结束 |
+| `ToolExecutionStarted` | `tool:executing` | `tool_name`、`tool_input` | 工具运行前 |
+| `ToolExecutionCompleted` | `tool:completed` | `tool_name`、`output`、`is_error`、`duration_ms` | 工具运行后 |
+| `ErrorEvent` | `error` | `message`、`recoverable` | 发生错误 |
+| `StatusEvent` | — | `message` | 状态更新 |
 
-### System Events
+### 系统事件
 
-| Event | Key | Payload | Emission Point |
+| 事件 | 键 | 载荷 | 发射点 |
 |-------|-----|---------|----------------|
-| `SessionOpened` | `session:opened` | `session_key` | Agent.process start |
-| `SessionClosed` | `session:closed` | `session_key`, `message_count` | Agent.process end |
-| `SubagentSpawned` | `agent:spawned` | `task_id`, `label` | Sub-agent created |
-| `SubagentCompleted` | `agent:completed` | `task_id`, `label`, `status` | Sub-agent finished |
-| `MemoryConsolidated` | `memory:consolidated` | `session_key`, `messages_archived` | Consolidation done |
+| `SessionOpened` | `session:opened` | `session_key` | Agent.process 开始 |
+| `SessionClosed` | `session:closed` | `session_key`、`message_count` | Agent.process 结束 |
+| `SubagentSpawned` | `agent:spawned` | `task_id`、`label` | 子代理创建 |
+| `SubagentCompleted` | `agent:completed` | `task_id`、`label`、`status` | 子代理完成 |
+| `MemoryConsolidated` | `memory:consolidated` | `session_key`、`messages_archived` | 整合完成 |
 
-## Usage
+## 用法
 
 ```python
 backend = DefaultObservabilityBackend(
@@ -57,9 +57,9 @@ backend = DefaultObservabilityBackend(
 )
 emitter = EventEmitter(backend)
 
-# Subscribe to specific events
+# 订阅特定事件
 async def on_tool_completed(event_type, payload):
-    print(f"Tool {payload['tool_name']} completed: {payload['is_error']}")
+    print(f"工具 {payload['tool_name']} 已完成：{payload['is_error']}")
 
 await backend.subscribe("tool:completed", on_tool_completed)
 ```

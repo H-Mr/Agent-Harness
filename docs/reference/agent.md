@@ -1,12 +1,10 @@
 # Agent
 
-`Agent` is the **pure stateless engine** — zero internal state, zero
-side-effects. The caller provides `Session`, `cwd`, and optional `account`
-on every call.
+`Agent` 是 **纯无状态引擎** — 零内部状态，零副作用。调用者在每次调用时提供 `Session`、`cwd` 和可选的 `account`。
 
-Source: `llm_harness.core.agent`
+源码位置：`llm_harness.core.agent`
 
-## Constructor
+## 构造函数
 
 ```python
 Agent(
@@ -16,13 +14,13 @@ Agent(
 )
 ```
 
-| Parameter | Type | Description |
+| 参数 | 类型 | 说明 |
 |-----------|------|-------------|
-| `loop` | `AgentLoop` | Configured ReAct loop |
-| `consolidator` | `MemoryConsolidator` or `None` | Memory consolidation engine |
-| `emitter` | `EventEmitter` or `None` | Observability event emitter |
+| `loop` | `AgentLoop` | 已配置的 ReAct 循环 |
+| `consolidator` | `MemoryConsolidator` 或 `None` | 记忆整合引擎 |
+| `emitter` | `EventEmitter` 或 `None` | 可观测性事件发射器 |
 
-## Methods
+## 方法
 
 ### process(msg, *, session, cwd, account="") → TurnResult
 
@@ -37,23 +35,23 @@ async def process(
 ) -> TurnResult
 ```
 
-Runs one complete turn:
+运行一个完整的回合：
 
-1. Emits `SessionOpened` (if emitter configured)
-2. Calls `session.get_history()` for message history
-3. Calls `session.add_message("user", msg.content)`
-4. Runs `MemoryConsolidator.maybe_consolidate()` (if configured)
-5. Runs `AgentLoop.run(msg, history, cwd=cwd)`
-6. Calls `_save_turn(session, result)` to persist new messages
-7. Emits `SessionClosed` (if emitter configured)
-8. Returns `TurnResult`
+1. 发射 `SessionOpened` 事件（如果配置了 emitter）
+2. 调用 `session.get_history()` 获取消息历史
+3. 调用 `session.add_message("user", msg.content)`
+4. 运行 `MemoryConsolidator.maybe_consolidate()`（如果配置了）
+5. 运行 `AgentLoop.run(msg, history, cwd=cwd)`
+6. 调用 `_save_turn(session, result)` 持久化新消息
+7. 发射 `SessionClosed` 事件（如果配置了 emitter）
+8. 返回 `TurnResult`
 
-| Parameter | Type | Description |
+| 参数 | 类型 | 说明 |
 |-----------|------|-------------|
-| `msg` | `InboundMessage` | Incoming user message |
-| `session` | `Session` | Session for this conversation |
-| `cwd` | `Path` | Working directory for file tools |
-| `account` | `str` | Account identifier for tenant isolation |
+| `msg` | `InboundMessage` | 传入的用户消息 |
+| `session` | `Session` | 此对话的会话 |
+| `cwd` | `Path` | 文件工具的工作目录 |
+| `account` | `str` | 租户隔离的账户标识符 |
 
 ### close()
 
@@ -61,25 +59,23 @@ Runs one complete turn:
 async def close(self) -> None
 ```
 
-Release resources. Currently a no-op (stateless engine). Added for future
-compatibility with sub-components that may hold resources.
+释放资源。当前为空操作（无状态引擎）。为将来与可能持有资源的子组件兼容而添加。
 
-## Internal Methods
+## 内部方法
 
 ### _save_turn(session, result)
 
-Iterates `result.messages[result.new_messages_start:]` and persists
-assistant and tool messages to `session`. Skips:
-- Messages that are not `assistant` or `tool` role
-- Empty assistant messages without `tool_calls`
+遍历 `result.messages[result.new_messages_start:]` 并将 assistant 和 tool 消息持久化到 `session`。跳过：
+- 非 `assistant` 或 `tool` 角色的消息
+- 没有 `tool_calls` 的空 assistant 消息
 
-## Concurrency
+## 并发
 
-Agent is stateless and safe to call from multiple tasks, provided:
-- Each call uses a different `Session` instance
-- Or the caller provides external synchronization for shared sessions
+Agent 是无状态的，从多个任务调用是安全的，前提是：
+- 每次调用使用不同的 `Session` 实例
+- 或者调用者为共享的 Session 提供外部同步
 
-## Usage
+## 用法
 
 ```python
 agent = harness.create_agent()

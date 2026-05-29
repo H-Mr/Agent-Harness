@@ -1,22 +1,22 @@
 # Providers
 
-The provider system abstracts LLM API calls behind a unified interface.
+Provider 系统在统一接口背后抽象了 LLM API 调用。
 
-Source: `llm_harness.adapters.providers`
+源码位置：`llm_harness.adapters.providers`
 
 ## LLMProvider (ABC)
 
 ```python
 class LLMProvider(ABC):
-    # Abstract methods (subclass must implement)
+    # 抽象方法（子类必须实现）
     async def chat(self, messages, tools=None, model=None, ...) -> LLMResponse: ...
     def get_default_model(self) -> str: ...
 
-    # Template methods (retry logic built-in)
+    # 模板方法（内置重试逻辑）
     async def chat_with_retry(self, messages, tools=None, model=None, ...) -> LLMResponse: ...
     async def chat_stream_with_retry(self, messages, tools=None, model=None, ...) -> LLMResponse: ...
 
-    # Streaming (override for native support)
+    # 流式（覆盖以实现原生支持）
     async def chat_stream(self, messages, tools=None, model=None, ...,
                           on_content_delta=None) -> LLMResponse: ...
 ```
@@ -26,12 +26,12 @@ class LLMProvider(ABC):
 ```python
 @dataclass
 class LLMResponse:
-    content: str | None                     # text response
-    tool_calls: list[ToolCallRequest]       # tool call list
+    content: str | None                     # 文本响应
+    tool_calls: list[ToolCallRequest]       # 工具调用列表
     finish_reason: str = "stop"             # stop / tool_calls / error / length
-    usage: dict[str, int]                   # token usage stats
-    reasoning_content: str | None = None    # reasoning (DeepSeek-R1, Kimi, etc.)
-    thinking_blocks: list[dict] | None = None  # Anthropic extended thinking
+    usage: dict[str, int]                   # 令牌使用统计
+    reasoning_content: str | None = None    # 推理内容（DeepSeek-R1、Kimi 等）
+    thinking_blocks: list[dict] | None = None  # Anthropic 扩展思考
 
     @property
     def has_tool_calls(self) -> bool: ...
@@ -42,30 +42,29 @@ class LLMResponse:
 ```python
 @dataclass
 class ToolCallRequest:
-    id: str                                 # unique tool call ID
-    name: str                               # tool name
-    arguments: dict[str, Any]               # tool arguments
-    extra_content: dict | None = None       # provider-specific extras (e.g., Gemini)
-    provider_specific_fields: dict | None = None    # non-standard tool_call fields
-    function_provider_specific_fields: dict | None = None  # non-standard function fields
+    id: str                                 # 唯一工具调用 ID
+    name: str                               # 工具名称
+    arguments: dict[str, Any]               # 工具参数
+    extra_content: dict | None = None       # provider 特定附加信息（例如 Gemini）
+    provider_specific_fields: dict | None = None    # 非标准 tool_call 字段
+    function_provider_specific_fields: dict | None = None  # 非标准 function 字段
 
     def to_openai_tool_call(self) -> dict: ...
 ```
 
-## Retry Strategy
+## 重试策略
 
-| Condition | Action |
+| 条件 | 操作 |
 |-----------|--------|
-| Transient error (429, 5xx, timeout, etc.) | Retry with 1s/2s/4s backoff |
-| Non-transient error + image content | Strip images, retry once |
-| Non-transient error, no images | Return error response |
+| 瞬时错误（429、5xx、超时等） | 以 1s/2s/4s 退避重试 |
+| 非瞬时错误 + 图片内容 | 移除图片，重试一次 |
+| 非瞬时错误，无图片 | 返回错误响应 |
 
-## Built-in Providers
+## 内置 Provider
 
 ### OpenAICompatProvider
 
-Covers all OpenAI-compatible APIs (OpenAI, DeepSeek, DashScope, OpenRouter,
-Ollama, vLLM, Gemini, Zhipu, Moonshot, Mistral, and more).
+覆盖所有 OpenAI 兼容 API（OpenAI、DeepSeek、DashScope、OpenRouter、Ollama、vLLM、Gemini、Zhipu、Moonshot、Mistral 等）。
 
 ```python
 provider = OpenAICompatProvider(
@@ -77,7 +76,7 @@ provider = OpenAICompatProvider(
 
 ### AnthropicProvider
 
-Native Anthropic SDK integration with prompt caching and extended thinking.
+原生 Anthropic SDK 集成，支持提示缓存和扩展思考。
 
 ```python
 provider = AnthropicProvider(
@@ -86,9 +85,9 @@ provider = AnthropicProvider(
 )
 ```
 
-## ProviderSpec Registry
+## ProviderSpec 注册表
 
-29 providers defined in `llm_harness.adapters.providers.registry.PROVIDERS`.
+在 `llm_harness.adapters.providers.registry.PROVIDERS` 中定义了 29 个 provider。
 
 ```python
 from llm_harness.adapters.providers.registry import detect_provider, instantiate_provider
