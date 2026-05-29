@@ -1546,11 +1546,12 @@
 - 一个 <code>EventEmitter</code>（如果提供了 <code>observability</code>）</p>
 <h2 id="_3">内部方法<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
 <h3 id="_build_systemmsg">_build_system(msg)<a class="headerlink" href="#_build_systemmsg" title="Permanent link">&para;</a></h3>
-<p>从以下部分组装系统提示：
+<p><code>_build_system</code> 是异步方法。从以下部分组装系统提示：
 1. <code>system_prompt</code>（或默认值）
 2. 当前 UTC 时间
 3. 可用的子代理定义（来自 swarm）
-4. 可用的技能（来自 skill registry）</p>
+4. 可用的技能（来自 skill registry）
+5. <strong>Memory Context</strong>（如果配置了 memory）—— 调用 <code>self._memory.get_context(msg.content)</code> 并将结果作为 <code>## Memory Context</code> 段落注入系统提示。</p>
 <p>返回 <code>[{"role": "system", "content": "..."}]</code></p>
 <h3 id="_build_consolidator">_build_consolidator()<a class="headerlink" href="#_build_consolidator" title="Permanent link">&para;</a></h3>
 <p>使用构造函数中的 <code>context_window_tokens</code> 和 <code>max_completion_tokens</code> 创建 <code>MemoryConsolidator</code>。仅在提供 <code>memory</code> 时在 <code>__init__</code> 期间调用。</p>
