@@ -26,6 +26,12 @@ markdown_extensions:
   - toc:
       permalink: true
 
+exclude_docs: |
+  superpowers/
+  architecture-2026-05-29.md
+  code-review-2026-05-28.md
+  code-review-fix-2026-05-28.md
+
 nav:
   - Home: index.md
   - Tutorials:
