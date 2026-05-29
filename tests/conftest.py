@@ -52,7 +52,6 @@ def mock_memory():
     mb.get_context = AsyncMock(return_value="")
     mb.read_section = AsyncMock(return_value="")
     mb.append_section = AsyncMock()
-    mb.add_history = AsyncMock()
     mb.consolidate = AsyncMock(return_value=True)
     return mb
 

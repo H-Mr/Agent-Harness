@@ -5,7 +5,6 @@ Maps llm-harness MemoryBackend Protocol calls to the real TDAI Gateway API:
   get_context(ns)        → POST /recall        {query, session_key}
   read_section(ns, sec)  → POST /search/memories or POST /search/conversations
   append_section(ns,s,e) → POST /capture        {user_content, assistant_content, session_key}
-  add_history(ns, entry) → POST /capture        (entry as user_content)
   consolidate(ns, msgs)  → POST /seed           {data: {sessions: [{session_key, rounds}]}}
 
 Gateway: https://github.com/H-Mr/TencentDB-Agent-Memory
@@ -152,17 +151,6 @@ class TencentDBMemoryBackend:
             })
         except Exception:
             logger.warning("TencentDB append_section failed", exc_info=True)
-
-    async def add_history(self, namespace: str, entry: str) -> None:
-        """Capture a history entry as a Gateway conversation turn."""
-        try:
-            await self._post("/capture", {
-                "user_content": entry,
-                "assistant_content": "(system: history entry captured)",
-                "session_key": namespace,
-            })
-        except Exception:
-            logger.warning("TencentDB add_history failed", exc_info=True)
 
     async def consolidate(
         self,
