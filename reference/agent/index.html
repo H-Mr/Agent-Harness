@@ -857,10 +857,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#constructor" class="md-nav__link">
+  <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Constructor
+        构造函数
       
     </span>
   </a>
@@ -868,15 +868,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methods" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Methods
+        方法
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Methods">
+    <nav class="md-nav" aria-label="方法">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -907,15 +907,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#internal-methods" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Internal Methods
+        内部方法
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Internal Methods">
+    <nav class="md-nav" aria-label="内部方法">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -935,10 +935,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#concurrency" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Concurrency
+        并发
       
     </span>
   </a>
@@ -946,10 +946,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Usage
+        用法
       
     </span>
   </a>
@@ -1338,10 +1338,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#constructor" class="md-nav__link">
+  <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Constructor
+        构造函数
       
     </span>
   </a>
@@ -1349,15 +1349,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methods" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Methods
+        方法
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Methods">
+    <nav class="md-nav" aria-label="方法">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1388,15 +1388,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#internal-methods" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Internal Methods
+        内部方法
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Internal Methods">
+    <nav class="md-nav" aria-label="内部方法">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1416,10 +1416,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#concurrency" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Concurrency
+        并发
       
     </span>
   </a>
@@ -1427,10 +1427,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Usage
+        用法
       
     </span>
   </a>
@@ -1455,11 +1455,9 @@
 
 
 <h1 id="agent">Agent<a class="headerlink" href="#agent" title="Permanent link">&para;</a></h1>
-<p><code>Agent</code> is the <strong>pure stateless engine</strong> — zero internal state, zero
-side-effects. The caller provides <code>Session</code>, <code>cwd</code>, and optional <code>account</code>
-on every call.</p>
-<p>Source: <code>llm_harness.core.agent</code></p>
-<h2 id="constructor">Constructor<a class="headerlink" href="#constructor" title="Permanent link">&para;</a></h2>
+<p><code>Agent</code> 是 <strong>纯无状态引擎</strong> — 零内部状态，零副作用。调用者在每次调用时提供 <code>Session</code>、<code>cwd</code> 和可选的 <code>account</code>。</p>
+<p>源码位置：<code>llm_harness.core.agent</code></p>
+<h2 id="_1">构造函数<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">Agent</span><span class="p">(</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">loop</span><span class="p">:</span> <span class="n">AgentLoop</span><span class="p">,</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">consolidator</span><span class="p">:</span> <span class="n">MemoryConsolidator</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1469,30 +1467,30 @@ on every call.</p>
 <table>
 <thead>
 <tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Description</th>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>loop</code></td>
 <td><code>AgentLoop</code></td>
-<td>Configured ReAct loop</td>
+<td>已配置的 ReAct 循环</td>
 </tr>
 <tr>
 <td><code>consolidator</code></td>
-<td><code>MemoryConsolidator</code> or <code>None</code></td>
-<td>Memory consolidation engine</td>
+<td><code>MemoryConsolidator</code> 或 <code>None</code></td>
+<td>记忆整合引擎</td>
 </tr>
 <tr>
 <td><code>emitter</code></td>
-<td><code>EventEmitter</code> or <code>None</code></td>
-<td>Observability event emitter</td>
+<td><code>EventEmitter</code> 或 <code>None</code></td>
+<td>可观测性事件发射器</td>
 </tr>
 </tbody>
 </table>
-<h2 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h2>
+<h2 id="_2">方法<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
 <h3 id="processmsg-session-cwd-account-turnresult">process(msg, *, session, cwd, account="") → TurnResult<a class="headerlink" href="#processmsg-session-cwd-account-turnresult" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">process</span><span class="p">(</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="bp">self</span><span class="p">,</span>
@@ -1503,64 +1501,62 @@ on every call.</p>
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">account</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TurnResult</span>
 </code></pre></div>
-<p>Runs one complete turn:</p>
+<p>运行一个完整的回合：</p>
 <ol>
-<li>Emits <code>SessionOpened</code> (if emitter configured)</li>
-<li>Calls <code>session.get_history()</code> for message history</li>
-<li>Calls <code>session.add_message("user", msg.content)</code></li>
-<li>Runs <code>MemoryConsolidator.maybe_consolidate()</code> (if configured)</li>
-<li>Runs <code>AgentLoop.run(msg, history, cwd=cwd)</code></li>
-<li>Calls <code>_save_turn(session, result)</code> to persist new messages</li>
-<li>Emits <code>SessionClosed</code> (if emitter configured)</li>
-<li>Returns <code>TurnResult</code></li>
+<li>发射 <code>SessionOpened</code> 事件（如果配置了 emitter）</li>
+<li>调用 <code>session.get_history()</code> 获取消息历史</li>
+<li>调用 <code>session.add_message("user", msg.content)</code></li>
+<li>运行 <code>MemoryConsolidator.maybe_consolidate()</code>（如果配置了）</li>
+<li>运行 <code>AgentLoop.run(msg, history, cwd=cwd)</code></li>
+<li>调用 <code>_save_turn(session, result)</code> 持久化新消息</li>
+<li>发射 <code>SessionClosed</code> 事件（如果配置了 emitter）</li>
+<li>返回 <code>TurnResult</code></li>
 </ol>
 <table>
 <thead>
 <tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Description</th>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>msg</code></td>
 <td><code>InboundMessage</code></td>
-<td>Incoming user message</td>
+<td>传入的用户消息</td>
 </tr>
 <tr>
 <td><code>session</code></td>
 <td><code>Session</code></td>
-<td>Session for this conversation</td>
+<td>此对话的会话</td>
 </tr>
 <tr>
 <td><code>cwd</code></td>
 <td><code>Path</code></td>
-<td>Working directory for file tools</td>
+<td>文件工具的工作目录</td>
 </tr>
 <tr>
 <td><code>account</code></td>
 <td><code>str</code></td>
-<td>Account identifier for tenant isolation</td>
+<td>租户隔离的账户标识符</td>
 </tr>
 </tbody>
 </table>
 <h3 id="close">close()<a class="headerlink" href="#close" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
-<p>Release resources. Currently a no-op (stateless engine). Added for future
-compatibility with sub-components that may hold resources.</p>
-<h2 id="internal-methods">Internal Methods<a class="headerlink" href="#internal-methods" title="Permanent link">&para;</a></h2>
+<p>释放资源。当前为空操作（无状态引擎）。为将来与可能持有资源的子组件兼容而添加。</p>
+<h2 id="_3">内部方法<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
 <h3 id="_save_turnsession-result">_save_turn(session, result)<a class="headerlink" href="#_save_turnsession-result" title="Permanent link">&para;</a></h3>
-<p>Iterates <code>result.messages[result.new_messages_start:]</code> and persists
-assistant and tool messages to <code>session</code>. Skips:
-- Messages that are not <code>assistant</code> or <code>tool</code> role
-- Empty assistant messages without <code>tool_calls</code></p>
-<h2 id="concurrency">Concurrency<a class="headerlink" href="#concurrency" title="Permanent link">&para;</a></h2>
-<p>Agent is stateless and safe to call from multiple tasks, provided:
-- Each call uses a different <code>Session</code> instance
-- Or the caller provides external synchronization for shared sessions</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<p>遍历 <code>result.messages[result.new_messages_start:]</code> 并将 assistant 和 tool 消息持久化到 <code>session</code>。跳过：
+- 非 <code>assistant</code> 或 <code>tool</code> 角色的消息
+- 没有 <code>tool_calls</code> 的空 assistant 消息</p>
+<h2 id="_4">并发<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>Agent 是无状态的，从多个任务调用是安全的，前提是：
+- 每次调用使用不同的 <code>Session</code> 实例
+- 或者调用者为共享的 Session 提供外部同步</p>
+<h2 id="_5">用法<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">harness</span><span class="o">.</span><span class="n">create_agent</span><span class="p">()</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;user:chat-1&quot;</span><span class="p">)</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>

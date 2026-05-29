@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#your-first-agent" class="md-skip">
+        <a href="#agent" class="md-skip">
           Skip to content
         </a>
       
@@ -431,10 +431,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#setup" class="md-nav__link">
+  <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Setup
+        设置
       
     </span>
   </a>
@@ -442,10 +442,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-happens" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What Happens
+        执行过程
       
     </span>
   </a>
@@ -1260,10 +1260,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#setup" class="md-nav__link">
+  <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Setup
+        设置
       
     </span>
   </a>
@@ -1271,10 +1271,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-happens" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What Happens
+        执行过程
       
     </span>
   </a>
@@ -1298,9 +1298,9 @@
 
 
 
-<h1 id="your-first-agent">Your First Agent<a class="headerlink" href="#your-first-agent" title="Permanent link">&para;</a></h1>
-<p>A complete example: file operations, web search, and multi-turn conversation.</p>
-<h2 id="setup">Setup<a class="headerlink" href="#setup" title="Permanent link">&para;</a></h2>
+<h1 id="agent">你的第一个 Agent<a class="headerlink" href="#agent" title="Permanent link">&para;</a></h1>
+<p>一个完整示例：文件操作、网络搜索和多轮对话。</p>
+<h2 id="_1">设置<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">asyncio</span><span class="o">,</span><span class="w"> </span><span class="nn">tempfile</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">llm_harness.adapters.providers.openai_compat_provider</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenAICompatProvider</span>
@@ -1334,13 +1334,13 @@
 <a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>    <span class="n">agent</span> <span class="o">=</span> <span class="n">harness</span><span class="o">.</span><span class="n">create_agent</span><span class="p">()</span>
 <a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>    <span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;demo:chat1&quot;</span><span class="p">)</span>
 <a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>
-<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>    <span class="c1"># Turn 1: create a file</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>    <span class="c1"># 第一轮：创建文件</span>
 <a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>    <span class="n">msg1</span> <span class="o">=</span> <span class="n">InboundMessage</span><span class="p">(</span><span class="s2">&quot;cli&quot;</span><span class="p">,</span> <span class="s2">&quot;alice&quot;</span><span class="p">,</span> <span class="s2">&quot;c1&quot;</span><span class="p">,</span>
 <a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>        <span class="s1">&#39;Create a Python file called hello.py that prints &quot;Hello from llm-harness!&quot;&#39;</span><span class="p">)</span>
 <a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>    <span class="n">r1</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">msg1</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">ws</span><span class="p">)</span>
 <a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Turn 1:&quot;</span><span class="p">,</span> <span class="n">r1</span><span class="o">.</span><span class="n">final_content</span><span class="p">[:</span><span class="mi">100</span><span class="p">])</span>
 <a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>
-<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>    <span class="c1"># Turn 2: run it</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>    <span class="c1"># 第二轮：运行它</span>
 <a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>    <span class="n">msg2</span> <span class="o">=</span> <span class="n">InboundMessage</span><span class="p">(</span><span class="s2">&quot;cli&quot;</span><span class="p">,</span> <span class="s2">&quot;alice&quot;</span><span class="p">,</span> <span class="s2">&quot;c1&quot;</span><span class="p">,</span> <span class="s2">&quot;Now run hello.py and tell me the output&quot;</span><span class="p">)</span>
 <a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>    <span class="n">r2</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">msg2</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">ws</span><span class="p">)</span>
 <a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Turn 2:&quot;</span><span class="p">,</span> <span class="n">r2</span><span class="o">.</span><span class="n">final_content</span><span class="p">[:</span><span class="mi">100</span><span class="p">])</span>
@@ -1350,12 +1350,12 @@
 <a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>
 <a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
-<h2 id="what-happens">What Happens<a class="headerlink" href="#what-happens" title="Permanent link">&para;</a></h2>
+<h2 id="_2">执行过程<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
 <ol>
-<li><code>Harness</code> assembles the Agent with the provider, tools, sandbox, and system prompt</li>
-<li>Turn 1: Agent receives the message → LLM decides to use <code>write_file</code> → tool executes → LLM confirms</li>
-<li>Turn 2: Agent receives the follow-up → LLM uses <code>exec</code> to run <code>python hello.py</code> → LLM reports the output</li>
-<li>Session accumulates all messages across turns</li>
+<li><code>Harness</code> 将 provider、工具、沙箱和系统提示组装成 Agent</li>
+<li>第一轮：Agent 收到消息 → LLM 决定使用 <code>write_file</code> → 工具执行 → LLM 确认</li>
+<li>第二轮：Agent 收到后续消息 → LLM 使用 <code>exec</code> 运行 <code>python hello.py</code> → LLM 报告输出</li>
+<li>Session 累积所有轮次的消息</li>
 </ol>
 
 

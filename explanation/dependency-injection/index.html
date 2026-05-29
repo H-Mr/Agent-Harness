@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#dependency-injection" class="md-skip">
+        <a href="#_1" class="md-skip">
           Skip to content
         </a>
       
@@ -1140,10 +1140,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#why-no-defaults" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why No Defaults?
+        为什么没有默认值？
       
     </span>
   </a>
@@ -1151,10 +1151,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#callback-injection" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Callback Injection
+        回调注入
       
     </span>
   </a>
@@ -1162,10 +1162,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#constructor-vs-factory" class="md-nav__link">
+  <a href="#vs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Constructor vs Factory
+        构造函数 vs 工厂
       
     </span>
   </a>
@@ -1173,10 +1173,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#comparison" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Comparison
+        对比
       
     </span>
   </a>
@@ -1282,10 +1282,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#why-no-defaults" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Why No Defaults?
+        为什么没有默认值？
       
     </span>
   </a>
@@ -1293,10 +1293,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#callback-injection" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Callback Injection
+        回调注入
       
     </span>
   </a>
@@ -1304,10 +1304,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#constructor-vs-factory" class="md-nav__link">
+  <a href="#vs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Constructor vs Factory
+        构造函数 vs 工厂
       
     </span>
   </a>
@@ -1315,10 +1315,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#comparison" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Comparison
+        对比
       
     </span>
   </a>
@@ -1342,33 +1342,28 @@
 
 
 
-<h1 id="dependency-injection">Dependency Injection<a class="headerlink" href="#dependency-injection" title="Permanent link">&para;</a></h1>
-<p>llm-harness takes a strong stance: <strong>every dependency is explicit, every
-parameter is required.</strong></p>
-<h2 id="why-no-defaults">Why No Defaults?<a class="headerlink" href="#why-no-defaults" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># llm-harness style — everything explicit</span>
+<h1 id="_1">依赖注入<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>llm-harness 采取了一个强硬的立场：<strong>每个依赖都是显式的，每个参数都是必需的。</strong></p>
+<h2 id="_2">为什么没有默认值？<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># llm-harness 风格 — 一切显式</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">harness</span> <span class="o">=</span> <span class="n">Harness</span><span class="p">(</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">provider</span><span class="o">=</span><span class="n">OpenAICompatProvider</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;sk-xxx&quot;</span><span class="p">),</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;deepseek-chat&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">tools</span><span class="o">=</span><span class="n">my_tools</span><span class="p">,</span>        <span class="c1"># required</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">sandbox</span><span class="o">=</span><span class="n">my_sandbox</span><span class="p">,</span>    <span class="c1"># required</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">memory</span><span class="o">=</span><span class="n">my_memory</span><span class="p">,</span>      <span class="c1"># optional — explicit None</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">permissions</span><span class="o">=</span><span class="n">my_perms</span><span class="p">,</span>  <span class="c1"># optional — explicit None</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">tools</span><span class="o">=</span><span class="n">my_tools</span><span class="p">,</span>        <span class="c1"># 必需</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">sandbox</span><span class="o">=</span><span class="n">my_sandbox</span><span class="p">,</span>    <span class="c1"># 必需</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">memory</span><span class="o">=</span><span class="n">my_memory</span><span class="p">,</span>      <span class="c1"># 可选 — 显式传入 None</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">permissions</span><span class="o">=</span><span class="n">my_perms</span><span class="p">,</span>  <span class="c1"># 可选 — 显式传入 None</span>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="p">)</span>
 </code></pre></div>
-<p>This is deliberate:</p>
+<p>这是经过深思熟虑的设计：</p>
 <ol>
-<li><strong>No hidden coupling.</strong> You can see every component the Agent depends on
-   at the call site.</li>
-<li><strong>No filesystem side-effects.</strong> The constructor never reads files,
-   environment variables, or global config.</li>
-<li><strong>Testable.</strong> Every dependency is replaceable with a mock.</li>
-<li><strong>Auditable.</strong> Static analysis tools can verify all dependencies are
-   provided.</li>
+<li><strong>没有隐藏耦合。</strong> 你可以在调用处看到 Agent 依赖的每一个组件。</li>
+<li><strong>没有文件系统副作用。</strong> 构造函数从不读取文件、环境变量或全局配置。</li>
+<li><strong>可测试。</strong> 每个依赖都可以替换为 mock。</li>
+<li><strong>可审计。</strong> 静态分析工具可以验证所有依赖都已提供。</li>
 </ol>
-<h2 id="callback-injection">Callback Injection<a class="headerlink" href="#callback-injection" title="Permanent link">&para;</a></h2>
-<p>Behavior that varies between deployments is injected as callbacks, not
-subclass overrides:</p>
+<h2 id="_3">回调注入<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>因部署环境而异的行为通过回调注入，而非子类覆盖：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">loop</span> <span class="o">=</span> <span class="n">AgentLoop</span><span class="p">(</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">on_build_context</span><span class="o">=</span><span class="k">lambda</span> <span class="n">msg</span><span class="p">,</span> <span class="n">history</span><span class="p">:</span> <span class="p">[</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>        <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;You are helpful.&quot;</span><span class="p">},</span>
@@ -1381,51 +1376,48 @@ subclass overrides:</p>
 <a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">on_error</span><span class="o">=</span><span class="k">lambda</span> <span class="n">exc</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Error in </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ctx</span><span class="p">),</span>
 <a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="p">)</span>
 </code></pre></div>
-<p>This means you can change the system prompt, permission logic, or error
-handling without subclassing <code>AgentLoop</code>.</p>
-<h2 id="constructor-vs-factory">Constructor vs Factory<a class="headerlink" href="#constructor-vs-factory" title="Permanent link">&para;</a></h2>
-<p><code>Harness</code> is the only "factory" in the framework. <code>ToolFactory</code> is a
-convenience for building the standard 15 tools with injected dependencies.
-For custom setups, you can bypass both and wire <code>AgentLoop</code> + <code>Agent</code> directly:</p>
+<p>这意味着你无需子类化 <code>AgentLoop</code> 即可更改系统提示词、权限逻辑或错误处理。</p>
+<h2 id="vs">构造函数 vs 工厂<a class="headerlink" href="#vs" title="Permanent link">&para;</a></h2>
+<p><code>Harness</code> 是框架中唯一的"工厂"。<code>ToolFactory</code> 是一个便利工具，用于构建标准的 15 个工具及其注入的依赖。对于自定义设置，你可以绕过这两者，直接连接 <code>AgentLoop</code> + <code>Agent</code>：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">loop</span> <span class="o">=</span> <span class="n">AgentLoop</span><span class="p">(</span><span class="n">provider</span><span class="o">=...</span><span class="p">,</span> <span class="n">tools</span><span class="o">=...</span><span class="p">,</span> <span class="n">model</span><span class="o">=...</span><span class="p">,</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>                 <span class="n">on_build_context</span><span class="o">=...</span><span class="p">,</span> <span class="n">on_tool_check</span><span class="o">=...</span><span class="p">,</span> <span class="n">on_error</span><span class="o">=...</span><span class="p">)</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span><span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">session</span><span class="o">=</span><span class="n">session</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cwd</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="comparison">Comparison<a class="headerlink" href="#comparison" title="Permanent link">&para;</a></h2>
+<h2 id="_4">对比<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Pattern</th>
+<th>特性</th>
 <th>llm-harness</th>
-<th>Typical Framework</th>
+<th>典型框架</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Provider</td>
-<td>Constructor param</td>
-<td>Env var / global singleton</td>
+<td>提供者</td>
+<td>构造函数参数</td>
+<td>环境变量 / 全局单例</td>
 </tr>
 <tr>
-<td>Tools</td>
-<td>Injected <code>ToolRegistry</code></td>
-<td>Auto-discovered / decorator-registered</td>
+<td>工具</td>
+<td>注入的 <code>ToolRegistry</code></td>
+<td>自动发现 / 装饰器注册</td>
 </tr>
 <tr>
-<td>Config</td>
-<td>Pydantic model passed in</td>
-<td>YAML file read internally</td>
+<td>配置</td>
+<td>传入的 Pydantic 模型</td>
+<td>内部读取 YAML 文件</td>
 </tr>
 <tr>
-<td>Session</td>
-<td>Caller passes <code>Session</code></td>
-<td>Framework manages lifecycle</td>
+<td>会话</td>
+<td>调用者传入 <code>Session</code></td>
+<td>框架管理生命周期</td>
 </tr>
 <tr>
-<td>Workspace</td>
-<td>Caller passes <code>cwd: Path</code></td>
-<td>Framework resolves internally</td>
+<td>工作区</td>
+<td>调用者传入 <code>cwd: Path</code></td>
+<td>框架内部解析</td>
 </tr>
 </tbody>
 </table>

@@ -913,10 +913,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#fields" class="md-nav__link">
+  <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fields
+        字段
       
     </span>
   </a>
@@ -924,10 +924,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#properties" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Properties
+        属性
       
     </span>
   </a>
@@ -935,15 +935,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methods" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Methods
+        方法
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Methods">
+    <nav class="md-nav" aria-label="方法">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -996,10 +996,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Usage
+        用法
       
     </span>
   </a>
@@ -1332,10 +1332,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#fields" class="md-nav__link">
+  <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fields
+        字段
       
     </span>
   </a>
@@ -1343,10 +1343,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#properties" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Properties
+        属性
       
     </span>
   </a>
@@ -1354,15 +1354,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methods" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Methods
+        方法
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Methods">
+    <nav class="md-nav" aria-label="方法">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1415,10 +1415,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Usage
+        用法
       
     </span>
   </a>
@@ -1443,70 +1443,64 @@
 
 
 <h1 id="session">Session<a class="headerlink" href="#session" title="Permanent link">&para;</a></h1>
-<p><code>Session</code> is a pure data structure — no I/O, no persistence. It holds the
-conversation messages and consolidation offset.</p>
-<p>Source: <code>llm_harness.core.session</code></p>
-<h2 id="fields">Fields<a class="headerlink" href="#fields" title="Permanent link">&para;</a></h2>
+<p><code>Session</code> 是纯数据结构 — 无 I/O，无持久化。它保存对话消息和整合偏移量。</p>
+<p>源码位置：<code>llm_harness.core.session</code></p>
+<h2 id="_1">字段<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nd">@dataclass</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">Session</span><span class="p">:</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span>                                          <span class="c1"># unique session identifier</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>                    <span class="c1"># full message history</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">created_at</span><span class="p">:</span> <span class="n">datetime</span>                              <span class="c1"># creation timestamp (UTC)</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">updated_at</span><span class="p">:</span> <span class="n">datetime</span>                              <span class="c1"># last update timestamp (UTC)</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>                          <span class="c1"># arbitrary metadata</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">last_consolidated</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>                        <span class="c1"># index offset for consolidation</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">key</span><span class="p">:</span> <span class="nb">str</span>                                          <span class="c1"># 唯一会话标识符</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>                    <span class="c1"># 完整消息历史</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">created_at</span><span class="p">:</span> <span class="n">datetime</span>                              <span class="c1"># 创建时间戳（UTC）</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="n">updated_at</span><span class="p">:</span> <span class="n">datetime</span>                              <span class="c1"># 最后更新时间戳（UTC）</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>                          <span class="c1"># 任意元数据</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">last_consolidated</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>                        <span class="c1"># 整合的索引偏移量</span>
 </code></pre></div>
-<h2 id="properties">Properties<a class="headerlink" href="#properties" title="Permanent link">&para;</a></h2>
+<h2 id="_2">属性<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Property</th>
-<th>Type</th>
-<th>Description</th>
+<th>属性</th>
+<th>类型</th>
+<th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>channel</code></td>
 <td><code>str \| None</code></td>
-<td>First component of <code>key</code> when formatted as <code>channel:chat_id</code></td>
+<td>当 <code>key</code> 格式为 <code>channel:chat_id</code> 时的第一个组成部分</td>
 </tr>
 <tr>
 <td><code>chat_id</code></td>
 <td><code>str \| None</code></td>
-<td>Second component of <code>key</code> when formatted as <code>channel:chat_id</code></td>
+<td>当 <code>key</code> 格式为 <code>channel:chat_id</code> 时的第二个组成部分</td>
 </tr>
 </tbody>
 </table>
-<h2 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h2>
+<h2 id="_3">方法<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
 <h3 id="add_messagerole-content-kwargs">add_message(role, content, **kwargs)<a class="headerlink" href="#add_messagerole-content-kwargs" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">add_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">role</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
-<p>Appends a message to <code>messages</code> with auto-generated <code>timestamp</code> and any
-extra kwargs (e.g., <code>tool_calls</code>, <code>tool_call_id</code>, <code>name</code>).</p>
+<p>向 <code>messages</code> 追加一条消息，自动生成 <code>timestamp</code> 并包含任何额外的 kwargs（例如 <code>tool_calls</code>、<code>tool_call_id</code>、<code>name</code>）。</p>
 <h3 id="get_historymax_messages500-listdictstr-any">get_history(max_messages=500) → list[dict[str, Any]]<a class="headerlink" href="#get_historymax_messages500-listdictstr-any" title="Permanent link">&para;</a></h3>
-<p>Returns recent unconsolidated messages, aligned to start at a <code>user</code> message.
-Skips messages before <code>last_consolidated</code>. Returns at most <code>max_messages</code>.
-Forward-searches to the nearest <code>role == "user"</code> message to ensure the LLM
-never receives orphaned assistant/tool messages.</p>
+<p>返回最近未整合的消息，并对齐到以 <code>user</code> 消息开始的位置。跳过 <code>last_consolidated</code> 之前的消息。最多返回 <code>max_messages</code> 条。向前搜索最近的 <code>role == "user"</code> 消息，确保 LLM 永远不会收到孤立的 assistant/tool 消息。</p>
 <h3 id="remove_beforeidx">remove_before(idx)<a class="headerlink" href="#remove_beforeidx" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">remove_before</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
-<p>Removes messages before <code>idx</code> and adjusts <code>last_consolidated</code> offset.
-Called by <code>MemoryConsolidator</code> after successful consolidation.</p>
+<p>移除 <code>idx</code> 之前的消息并调整 <code>last_consolidated</code> 偏移量。由 <code>MemoryConsolidator</code> 在成功整合后调用。</p>
 <h3 id="to_state-dictstr-any">to_state() → dict[str, Any]<a class="headerlink" href="#to_state-dictstr-any" title="Permanent link">&para;</a></h3>
-<p>Returns serializable state: <code>{"messages": ..., "metadata": ..., "last_consolidated": ...}</code></p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<p>返回可序列化的状态：<code>{"messages": ..., "metadata": ..., "last_consolidated": ...}</code></p>
+<h2 id="_4">用法<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">session</span> <span class="o">=</span> <span class="n">Session</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;alice:chat1&quot;</span><span class="p">)</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">session</span><span class="o">.</span><span class="n">add_message</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;Hello&quot;</span><span class="p">)</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">session</span><span class="o">.</span><span class="n">add_message</span><span class="p">(</span><span class="s2">&quot;assistant&quot;</span><span class="p">,</span> <span class="s2">&quot;Hi there!&quot;</span><span class="p">,</span> <span class="n">tool_calls</span><span class="o">=</span><span class="p">[</span><span class="o">...</span><span class="p">])</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">session</span><span class="o">.</span><span class="n">add_message</span><span class="p">(</span><span class="s2">&quot;tool&quot;</span><span class="p">,</span> <span class="s2">&quot;result&quot;</span><span class="p">,</span> <span class="n">tool_call_id</span><span class="o">=</span><span class="s2">&quot;c1&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;read_file&quot;</span><span class="p">)</span>
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
 <a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">history</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">get_history</span><span class="p">()</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># → last two messages starting from nearest user message</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># → 从最近的 user 消息开始的后两条消息</span>
 <a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
 <a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">state</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">to_state</span><span class="p">()</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="c1"># → persist this dict</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="c1"># → 持久化此字典</span>
 </code></pre></div>
 
 

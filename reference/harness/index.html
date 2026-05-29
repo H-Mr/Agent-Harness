@@ -829,10 +829,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#constructor" class="md-nav__link">
+  <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Constructor
+        构造函数
       
     </span>
   </a>
@@ -840,15 +840,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methods" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Methods
+        方法
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Methods">
+    <nav class="md-nav" aria-label="方法">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -868,15 +868,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#internal-methods" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Internal Methods
+        内部方法
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Internal Methods">
+    <nav class="md-nav" aria-label="内部方法">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -907,10 +907,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Usage
+        用法
       
     </span>
   </a>
@@ -1327,10 +1327,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#constructor" class="md-nav__link">
+  <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Constructor
+        构造函数
       
     </span>
   </a>
@@ -1338,15 +1338,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methods" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Methods
+        方法
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Methods">
+    <nav class="md-nav" aria-label="方法">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1366,15 +1366,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#internal-methods" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Internal Methods
+        内部方法
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Internal Methods">
+    <nav class="md-nav" aria-label="内部方法">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1405,10 +1405,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Usage
+        用法
       
     </span>
   </a>
@@ -1433,11 +1433,9 @@
 
 
 <h1 id="harness">Harness<a class="headerlink" href="#harness" title="Permanent link">&para;</a></h1>
-<p><code>Harness</code> is the <strong>assembler</strong> — it receives all dependencies, creates the
-<code>MemoryConsolidator</code> (if memory is configured), injects callbacks into
-<code>AgentLoop</code>, and returns a ready-to-use <code>Agent</code>.</p>
-<p>Source: <code>llm_harness.core.harness</code></p>
-<h2 id="constructor">Constructor<a class="headerlink" href="#constructor" title="Permanent link">&para;</a></h2>
+<p><code>Harness</code> 是 <strong>组装器</strong> — 它接收所有依赖项，创建 <code>MemoryConsolidator</code>（如果配置了 memory），将回调注入 <code>AgentLoop</code>，并返回一个可直接使用的 <code>Agent</code>。</p>
+<p>源码位置：<code>llm_harness.core.harness</code></p>
+<h2 id="_1">构造函数<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">Harness</span><span class="p">(</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="o">*</span><span class="p">,</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">provider</span><span class="p">:</span> <span class="n">LLMProvider</span><span class="p">,</span>          <span class="c1"># required</span>
@@ -1457,108 +1455,106 @@
 <table>
 <thead>
 <tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
+<th>参数</th>
+<th>类型</th>
+<th>必填</th>
+<th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>provider</code></td>
 <td><code>LLMProvider</code></td>
-<td>Yes</td>
-<td>LLM provider instance</td>
+<td>是</td>
+<td>LLM provider 实例</td>
 </tr>
 <tr>
 <td><code>model</code></td>
 <td><code>str</code></td>
-<td>Yes</td>
-<td>Model identifier</td>
+<td>是</td>
+<td>模型标识符</td>
 </tr>
 <tr>
 <td><code>tools</code></td>
 <td><code>ToolRegistry</code></td>
-<td>Yes</td>
-<td>Tool registry with registered tools</td>
+<td>是</td>
+<td>已注册工具的 ToolRegistry</td>
 </tr>
 <tr>
 <td><code>sandbox</code></td>
 <td><code>SandboxBackend</code></td>
-<td>Yes</td>
-<td>Sandbox for file I/O and exec</td>
+<td>是</td>
+<td>用于文件 I/O 和执行的沙箱</td>
 </tr>
 <tr>
 <td><code>memory</code></td>
 <td><code>MemoryBackend</code></td>
-<td>No</td>
-<td>Memory backend for consolidation</td>
+<td>否</td>
+<td>用于整合的 memory 后端</td>
 </tr>
 <tr>
 <td><code>swarm</code></td>
 <td><code>Any</code></td>
-<td>No</td>
-<td>Sub-agent backend</td>
+<td>否</td>
+<td>子代理后端</td>
 </tr>
 <tr>
 <td><code>permissions</code></td>
 <td><code>PermissionChecker</code></td>
-<td>No</td>
-<td>Permission checker</td>
+<td>否</td>
+<td>权限检查器</td>
 </tr>
 <tr>
 <td><code>skills</code></td>
 <td><code>SkillRegistry</code></td>
-<td>No</td>
-<td>Skill registry (defaults to empty)</td>
+<td>否</td>
+<td>技能注册表（默认为空）</td>
 </tr>
 <tr>
 <td><code>observability</code></td>
 <td><code>ObservabilityBackend</code></td>
-<td>No</td>
-<td>Event backend</td>
+<td>否</td>
+<td>事件后端</td>
 </tr>
 <tr>
 <td><code>system_prompt</code></td>
 <td><code>str</code></td>
-<td>No</td>
-<td>Custom system prompt (default: "You are a helpful AI assistant.")</td>
+<td>否</td>
+<td>自定义系统提示（默认："You are a helpful AI assistant."）</td>
 </tr>
 <tr>
 <td><code>context_window_tokens</code></td>
 <td><code>int</code></td>
-<td>No</td>
-<td>Context window size for consolidation</td>
+<td>否</td>
+<td>整合时的上下文窗口大小</td>
 </tr>
 <tr>
 <td><code>max_completion_tokens</code></td>
 <td><code>int</code></td>
-<td>No</td>
-<td>Max completion tokens for consolidation</td>
+<td>否</td>
+<td>整合时的最大补全令牌数</td>
 </tr>
 </tbody>
 </table>
-<h2 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h2>
+<h2 id="_2">方法<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
 <h3 id="create_agent">create_agent()<a class="headerlink" href="#create_agent" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">create_agent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Agent</span>
 </code></pre></div>
-<p>Creates and returns a configured <code>Agent</code> instance. The returned Agent has:
-- An <code>AgentLoop</code> with callbacks wired to <code>_build_system</code>, permissions, and error logging
-- A <code>MemoryConsolidator</code> (if <code>memory</code> was provided)
-- An <code>EventEmitter</code> (if <code>observability</code> was provided)</p>
-<h2 id="internal-methods">Internal Methods<a class="headerlink" href="#internal-methods" title="Permanent link">&para;</a></h2>
+<p>创建并返回一个已配置的 <code>Agent</code> 实例。返回的 Agent 包含：
+- 一个 <code>AgentLoop</code>，其回调连接到 <code>_build_system</code>、权限和错误日志记录
+- 一个 <code>MemoryConsolidator</code>（如果提供了 <code>memory</code>）
+- 一个 <code>EventEmitter</code>（如果提供了 <code>observability</code>）</p>
+<h2 id="_3">内部方法<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
 <h3 id="_build_systemmsg">_build_system(msg)<a class="headerlink" href="#_build_systemmsg" title="Permanent link">&para;</a></h3>
-<p>Assembles the system prompt from:
-1. <code>system_prompt</code> (or default)
-2. Current UTC time
-3. Available sub-agent definitions (from swarm)
-4. Available skills (from skill registry)</p>
-<p>Returns <code>[{"role": "system", "content": "..."}]</code></p>
+<p>从以下部分组装系统提示：
+1. <code>system_prompt</code>（或默认值）
+2. 当前 UTC 时间
+3. 可用的子代理定义（来自 swarm）
+4. 可用的技能（来自 skill registry）</p>
+<p>返回 <code>[{"role": "system", "content": "..."}]</code></p>
 <h3 id="_build_consolidator">_build_consolidator()<a class="headerlink" href="#_build_consolidator" title="Permanent link">&para;</a></h3>
-<p>Creates <code>MemoryConsolidator</code> with <code>context_window_tokens</code> and
-<code>max_completion_tokens</code> from the constructor. Called during <code>__init__</code>
-only if <code>memory</code> is provided.</p>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<p>使用构造函数中的 <code>context_window_tokens</code> 和 <code>max_completion_tokens</code> 创建 <code>MemoryConsolidator</code>。仅在提供 <code>memory</code> 时在 <code>__init__</code> 期间调用。</p>
+<h2 id="_4">用法<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">llm_harness</span><span class="w"> </span><span class="kn">import</span> <span class="n">Harness</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">harness</span> <span class="o">=</span> <span class="n">Harness</span><span class="p">(</span>

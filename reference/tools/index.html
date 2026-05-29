@@ -941,15 +941,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#core-classes" class="md-nav__link">
+  <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Core Classes
+        核心类
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Core Classes">
+    <nav class="md-nav" aria-label="核心类">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1013,10 +1013,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#built-in-tools" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Built-in Tools
+        内置工具
       
     </span>
   </a>
@@ -1024,10 +1024,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#implementing-a-custom-tool" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Implementing a Custom Tool
+        实现自定义工具
       
     </span>
   </a>
@@ -1332,15 +1332,15 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#core-classes" class="md-nav__link">
+  <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Core Classes
+        核心类
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Core Classes">
+    <nav class="md-nav" aria-label="核心类">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1404,10 +1404,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#built-in-tools" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Built-in Tools
+        内置工具
       
     </span>
   </a>
@@ -1415,10 +1415,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#implementing-a-custom-tool" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Implementing a Custom Tool
+        实现自定义工具
       
     </span>
   </a>
@@ -1443,10 +1443,9 @@
 
 
 <h1 id="tools">Tools<a class="headerlink" href="#tools" title="Permanent link">&para;</a></h1>
-<p>The tool system provides the interface between LLM tool-call requests and
-actual execution.</p>
-<p>Source: <code>llm_harness.core.tools</code></p>
-<h2 id="core-classes">Core Classes<a class="headerlink" href="#core-classes" title="Permanent link">&para;</a></h2>
+<p>工具系统提供了 LLM 工具调用请求与实际执行之间的接口。</p>
+<p>源码位置：<code>llm_harness.core.tools</code></p>
+<h2 id="_1">核心类<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
 <h3 id="basetool-abc">BaseTool (ABC)<a class="headerlink" href="#basetool-abc" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">BaseTool</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">name</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
@@ -1470,15 +1469,15 @@ actual execution.</p>
 <h3 id="toolexecutioncontext">ToolExecutionContext<a class="headerlink" href="#toolexecutioncontext" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nd">@dataclass</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">ToolExecutionContext</span><span class="p">:</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">cwd</span><span class="p">:</span> <span class="n">Path</span>                              <span class="c1"># working directory</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>               <span class="c1"># session_key, account, etc.</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">cwd</span><span class="p">:</span> <span class="n">Path</span>                              <span class="c1"># 工作目录</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>               <span class="c1"># session_key、account 等</span>
 </code></pre></div>
 <h3 id="toolresult">ToolResult<a class="headerlink" href="#toolresult" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">ToolResult</span><span class="p">:</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">output</span><span class="p">:</span> <span class="nb">str</span>                            <span class="c1"># tool output text</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">is_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>                 <span class="c1"># whether execution failed</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>               <span class="c1"># arbitrary metadata</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">output</span><span class="p">:</span> <span class="nb">str</span>                            <span class="c1"># 工具输出文本</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">is_error</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>                 <span class="c1"># 执行是否失败</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>               <span class="c1"># 任意元数据</span>
 </code></pre></div>
 <h3 id="toolfactory">ToolFactory<a class="headerlink" href="#toolfactory" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">ToolFactory</span><span class="p">:</span>
@@ -1486,14 +1485,14 @@ actual execution.</p>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">builder</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">BaseTool</span> <span class="o">|</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseTool</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
 </code></pre></div>
-<h2 id="built-in-tools">Built-in Tools<a class="headerlink" href="#built-in-tools" title="Permanent link">&para;</a></h2>
+<h2 id="_2">内置工具<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Tool</th>
-<th>Name</th>
-<th>Dependencies</th>
-<th>Read-Only</th>
+<th>工具</th>
+<th>名称</th>
+<th>依赖</th>
+<th>只读</th>
 </tr>
 </thead>
 <tbody>
@@ -1501,104 +1500,104 @@ actual execution.</p>
 <td>ReadFileTool</td>
 <td><code>read_file</code></td>
 <td>sandbox</td>
-<td>Yes</td>
+<td>是</td>
 </tr>
 <tr>
 <td>WriteFileTool</td>
 <td><code>write_file</code></td>
 <td>sandbox</td>
-<td>No</td>
+<td>否</td>
 </tr>
 <tr>
 <td>EditFileTool</td>
 <td><code>edit_file</code></td>
 <td>sandbox</td>
-<td>No</td>
+<td>否</td>
 </tr>
 <tr>
 <td>ExecTool</td>
 <td><code>exec</code></td>
 <td>sandbox</td>
-<td>No</td>
+<td>否</td>
 </tr>
 <tr>
 <td>GlobTool</td>
 <td><code>glob</code></td>
 <td>sandbox</td>
-<td>Yes</td>
+<td>是</td>
 </tr>
 <tr>
 <td>GrepTool</td>
 <td><code>grep</code></td>
 <td>sandbox</td>
-<td>Yes</td>
+<td>是</td>
 </tr>
 <tr>
 <td>WebSearchTool</td>
 <td><code>web_search</code></td>
-<td>none</td>
-<td>Yes</td>
+<td>无</td>
+<td>是</td>
 </tr>
 <tr>
 <td>WebFetchTool</td>
 <td><code>web_fetch</code></td>
-<td>none</td>
-<td>Yes</td>
+<td>无</td>
+<td>是</td>
 </tr>
 <tr>
 <td>MemoryReadTool</td>
 <td><code>memory_read</code></td>
 <td>memory</td>
-<td>Yes</td>
+<td>是</td>
 </tr>
 <tr>
 <td>MemoryWriteTool</td>
 <td><code>memory_write</code></td>
 <td>memory</td>
-<td>No</td>
+<td>否</td>
 </tr>
 <tr>
 <td>AgentTool</td>
 <td><code>agent</code></td>
 <td>swarm, bus</td>
-<td>No</td>
+<td>否</td>
 </tr>
 <tr>
 <td>SendMessageTool</td>
 <td><code>send_message</code></td>
 <td>swarm</td>
-<td>No</td>
+<td>否</td>
 </tr>
 <tr>
 <td>TaskStopTool</td>
 <td><code>task_stop</code></td>
 <td>swarm</td>
-<td>No</td>
+<td>否</td>
 </tr>
 <tr>
 <td>SkillTool</td>
 <td><code>skill</code></td>
 <td>skills</td>
-<td>Yes</td>
+<td>是</td>
 </tr>
 <tr>
 <td>AskUserQuestionTool</td>
 <td><code>ask_user_question</code></td>
-<td>none</td>
-<td>No</td>
+<td>无</td>
+<td>否</td>
 </tr>
 </tbody>
 </table>
-<h2 id="implementing-a-custom-tool">Implementing a Custom Tool<a class="headerlink" href="#implementing-a-custom-tool" title="Permanent link">&para;</a></h2>
+<h2 id="_3">实现自定义工具<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">llm_harness.core.tools.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseTool</span><span class="p">,</span> <span class="n">ToolExecutionContext</span><span class="p">,</span> <span class="n">ToolResult</span>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">GreetInput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;Name to greet&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;要问候的名称&quot;</span><span class="p">)</span>
 <a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
 <a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="k">class</span><span class="w"> </span><span class="nc">GreetTool</span><span class="p">(</span><span class="n">BaseTool</span><span class="p">):</span>
 <a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">name</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;greet&quot;</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="n">description</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Greet someone by name.&quot;</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="n">description</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;按名称问候某人。&quot;</span>
 <a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="n">input_model</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">BaseModel</span><span class="p">]]</span> <span class="o">=</span> <span class="n">GreetInput</span>
 <a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
 <a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">GreetInput</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">ToolExecutionContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ToolResult</span><span class="p">:</span>

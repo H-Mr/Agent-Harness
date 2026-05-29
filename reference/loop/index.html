@@ -885,10 +885,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#constructor" class="md-nav__link">
+  <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Constructor
+        构造函数
       
     </span>
   </a>
@@ -896,10 +896,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#callback-signatures" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Callback Signatures
+        回调签名
       
     </span>
   </a>
@@ -907,15 +907,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methods" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Methods
+        方法
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Methods">
+    <nav class="md-nav" aria-label="方法">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -946,10 +946,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#constants" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Constants
+        常量
       
     </span>
   </a>
@@ -957,10 +957,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Usage
+        用法
       
     </span>
   </a>
@@ -1321,10 +1321,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#constructor" class="md-nav__link">
+  <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Constructor
+        构造函数
       
     </span>
   </a>
@@ -1332,10 +1332,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#callback-signatures" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Callback Signatures
+        回调签名
       
     </span>
   </a>
@@ -1343,15 +1343,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#methods" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Methods
+        方法
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Methods">
+    <nav class="md-nav" aria-label="方法">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1382,10 +1382,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#constants" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Constants
+        常量
       
     </span>
   </a>
@@ -1393,10 +1393,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#usage" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Usage
+        用法
       
     </span>
   </a>
@@ -1421,10 +1421,9 @@
 
 
 <h1 id="agentloop">AgentLoop<a class="headerlink" href="#agentloop" title="Permanent link">&para;</a></h1>
-<p><code>AgentLoop</code> is the <strong>ReAct skeleton</strong> — the core loop that calls the LLM,
-checks for tool calls, executes tools, and assembles the message history.</p>
-<p>Source: <code>llm_harness.core.loop</code></p>
-<h2 id="constructor">Constructor<a class="headerlink" href="#constructor" title="Permanent link">&para;</a></h2>
+<p><code>AgentLoop</code> 是 <strong>ReAct 骨架</strong> — 核心循环，负责调用 LLM、检查工具调用、执行工具并组装消息历史。</p>
+<p>源码位置：<code>llm_harness.core.loop</code></p>
+<h2 id="_1">构造函数<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">AgentLoop</span><span class="p">(</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">provider</span><span class="p">:</span> <span class="n">LLMProvider</span><span class="p">,</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">tools</span><span class="p">:</span> <span class="n">ToolRegistry</span><span class="p">,</span>
@@ -1441,9 +1440,9 @@ checks for tool calls, executes tools, and assembles the message history.</p>
 <table>
 <thead>
 <tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Description</th>
+<th>参数</th>
+<th>类型</th>
+<th>说明</th>
 </tr>
 </thead>
 <tbody>
@@ -1455,46 +1454,46 @@ checks for tool calls, executes tools, and assembles the message history.</p>
 <tr>
 <td><code>tools</code></td>
 <td><code>ToolRegistry</code></td>
-<td>Tool registry</td>
+<td>工具注册表</td>
 </tr>
 <tr>
 <td><code>model</code></td>
 <td><code>str</code></td>
-<td>Model identifier</td>
+<td>模型标识符</td>
 </tr>
 <tr>
 <td><code>on_build_context</code></td>
 <td><code>BuildContextCallback</code></td>
-<td>Assembles messages for the LLM</td>
+<td>为 LLM 组装消息</td>
 </tr>
 <tr>
 <td><code>on_tool_check</code></td>
 <td><code>ToolCheckCallback</code></td>
-<td>Permission check before tool execution</td>
+<td>工具执行前的权限检查</td>
 </tr>
 <tr>
 <td><code>on_error</code></td>
 <td><code>ErrorCallback</code></td>
-<td>Error handler</td>
+<td>错误处理程序</td>
 </tr>
 <tr>
 <td><code>on_event</code></td>
-<td><code>EventCallback</code> or <code>None</code></td>
-<td>Legacy event callback</td>
+<td><code>EventCallback</code> 或 <code>None</code></td>
+<td>遗留事件回调</td>
 </tr>
 <tr>
 <td><code>emitter</code></td>
-<td><code>EventEmitter</code> or <code>None</code></td>
-<td>Structured observability</td>
+<td><code>EventEmitter</code> 或 <code>None</code></td>
+<td>结构化可观测性</td>
 </tr>
 <tr>
 <td><code>max_iterations</code></td>
 <td><code>int</code></td>
-<td>Max ReAct iterations (default: 40)</td>
+<td>最大 ReAct 迭代次数（默认：40）</td>
 </tr>
 </tbody>
 </table>
-<h2 id="callback-signatures">Callback Signatures<a class="headerlink" href="#callback-signatures" title="Permanent link">&para;</a></h2>
+<h2 id="_2">回调签名<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># BuildContextCallback</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">Callable</span><span class="p">[[</span><span class="n">msg</span><span class="p">,</span> <span class="n">history</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">|</span> <span class="n">Awaitable</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]]]</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
@@ -1507,7 +1506,7 @@ checks for tool calls, executes tools, and assembles the message history.</p>
 <a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># EventCallback</span>
 <a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">Callable</span><span class="p">[[</span><span class="n">event_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">payload</span><span class="p">:</span> <span class="nb">dict</span><span class="p">],</span> <span class="n">Awaitable</span><span class="p">[</span><span class="kc">None</span><span class="p">]]</span>
 </code></pre></div>
-<h2 id="methods">Methods<a class="headerlink" href="#methods" title="Permanent link">&para;</a></h2>
+<h2 id="_3">方法<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
 <h3 id="runmsg-history-cwdnone-turnresult">run(msg, history, *, cwd=None) → TurnResult<a class="headerlink" href="#runmsg-history-cwdnone-turnresult" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="bp">self</span><span class="p">,</span>
@@ -1517,29 +1516,29 @@ checks for tool calls, executes tools, and assembles the message history.</p>
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">cwd</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TurnResult</span>
 </code></pre></div>
-<p>Executes the ReAct loop:</p>
+<p>执行 ReAct 循环：</p>
 <ol>
-<li>Calls <code>on_build_context(msg, history)</code> → messages list</li>
-<li>Loop (up to <code>max_iterations</code>):
+<li>调用 <code>on_build_context(msg, history)</code> → 消息列表</li>
+<li>循环（最多 <code>max_iterations</code> 次）：
    a. <code>provider.chat_with_retry(messages, tools, model)</code> → LLMResponse
-   b. If no tool_calls: append assistant message, return TurnResult
-   c. For each tool call: check → parse → execute → append result</li>
-<li>If max iterations reached: return "Max iterations reached."</li>
+   b. 如果没有 tool_calls：追加 assistant 消息，返回 TurnResult
+   c. 对每个工具调用：检查 → 解析 → 执行 → 追加结果</li>
+<li>如果达到最大迭代次数：返回 "Max iterations reached."</li>
 </ol>
 <h2 id="turnresult">TurnResult<a class="headerlink" href="#turnresult" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nd">@dataclass</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">TurnResult</span><span class="p">:</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">final_content</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>       <span class="c1"># LLM text response</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">tools_used</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>  <span class="c1"># tool names invoked</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>  <span class="c1"># full message history</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">new_messages_start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># index where new messages begin</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">final_content</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>       <span class="c1"># LLM 文本响应</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">tools_used</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>  <span class="c1"># 已调用的工具名称</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>  <span class="c1"># 完整消息历史</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">new_messages_start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># 新消息开始的索引</span>
 </code></pre></div>
-<h2 id="constants">Constants<a class="headerlink" href="#constants" title="Permanent link">&para;</a></h2>
+<h2 id="_4">常量<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>TOOL_RESULT_MAX_CHARS = 16_000</code> — tool output truncation limit</li>
+<li><code>TOOL_RESULT_MAX_CHARS = 16_000</code> — 工具输出截断限制</li>
 </ul>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
-<p>Direct usage (bypassing Harness):</p>
+<h2 id="_5">用法<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>直接使用（绕过 Harness）：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">loop</span> <span class="o">=</span> <span class="n">AgentLoop</span><span class="p">(</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">provider</span><span class="o">=</span><span class="n">provider</span><span class="p">,</span>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">tools</span><span class="o">=</span><span class="n">registry</span><span class="p">,</span>

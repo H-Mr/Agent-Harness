@@ -1002,10 +1002,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#retry-strategy" class="md-nav__link">
+  <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Retry Strategy
+        重试策略
       
     </span>
   </a>
@@ -1013,15 +1013,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#built-in-providers" class="md-nav__link">
+  <a href="#provider" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Built-in Providers
+        内置 Provider
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Built-in Providers">
+    <nav class="md-nav" aria-label="内置 Provider">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1052,10 +1052,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#providerspec-registry" class="md-nav__link">
+  <a href="#providerspec" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ProviderSpec Registry
+        ProviderSpec 注册表
       
     </span>
   </a>
@@ -1365,10 +1365,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#retry-strategy" class="md-nav__link">
+  <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Retry Strategy
+        重试策略
       
     </span>
   </a>
@@ -1376,15 +1376,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#built-in-providers" class="md-nav__link">
+  <a href="#provider" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Built-in Providers
+        内置 Provider
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Built-in Providers">
+    <nav class="md-nav" aria-label="内置 Provider">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1415,10 +1415,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#providerspec-registry" class="md-nav__link">
+  <a href="#providerspec" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ProviderSpec Registry
+        ProviderSpec 注册表
       
     </span>
   </a>
@@ -1443,31 +1443,31 @@
 
 
 <h1 id="providers">Providers<a class="headerlink" href="#providers" title="Permanent link">&para;</a></h1>
-<p>The provider system abstracts LLM API calls behind a unified interface.</p>
-<p>Source: <code>llm_harness.adapters.providers</code></p>
+<p>Provider 系统在统一接口背后抽象了 LLM API 调用。</p>
+<p>源码位置：<code>llm_harness.adapters.providers</code></p>
 <h2 id="llmprovider-abc">LLMProvider (ABC)<a class="headerlink" href="#llmprovider-abc" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">LLMProvider</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="c1"># Abstract methods (subclass must implement)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="c1"># 抽象方法（子类必须实现）</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">chat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LLMResponse</span><span class="p">:</span> <span class="o">...</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_default_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span> <span class="o">...</span>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="c1"># Template methods (retry logic built-in)</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="c1"># 模板方法（内置重试逻辑）</span>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">chat_with_retry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LLMResponse</span><span class="p">:</span> <span class="o">...</span>
 <a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">chat_stream_with_retry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LLMResponse</span><span class="p">:</span> <span class="o">...</span>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="c1"># Streaming (override for native support)</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="c1"># 流式（覆盖以实现原生支持）</span>
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">chat_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>                          <span class="n">on_content_delta</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LLMResponse</span><span class="p">:</span> <span class="o">...</span>
 </code></pre></div>
 <h2 id="llmresponse">LLMResponse<a class="headerlink" href="#llmresponse" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nd">@dataclass</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">LLMResponse</span><span class="p">:</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">content</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>                     <span class="c1"># text response</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">tool_calls</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ToolCallRequest</span><span class="p">]</span>       <span class="c1"># tool call list</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">content</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>                     <span class="c1"># 文本响应</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">tool_calls</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ToolCallRequest</span><span class="p">]</span>       <span class="c1"># 工具调用列表</span>
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">finish_reason</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;stop&quot;</span>             <span class="c1"># stop / tool_calls / error / length</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">usage</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>                   <span class="c1"># token usage stats</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">reasoning_content</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>    <span class="c1"># reasoning (DeepSeek-R1, Kimi, etc.)</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">thinking_blocks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Anthropic extended thinking</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">usage</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>                   <span class="c1"># 令牌使用统计</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">reasoning_content</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>    <span class="c1"># 推理内容（DeepSeek-R1、Kimi 等）</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">thinking_blocks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Anthropic 扩展思考</span>
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
 <a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="nd">@property</span>
 <a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">has_tool_calls</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span> <span class="o">...</span>
@@ -1475,42 +1475,41 @@
 <h2 id="toolcallrequest">ToolCallRequest<a class="headerlink" href="#toolcallrequest" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nd">@dataclass</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">class</span><span class="w"> </span><span class="nc">ToolCallRequest</span><span class="p">:</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>                                 <span class="c1"># unique tool call ID</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>                               <span class="c1"># tool name</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">arguments</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>               <span class="c1"># tool arguments</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">extra_content</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>       <span class="c1"># provider-specific extras (e.g., Gemini)</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">provider_specific_fields</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>    <span class="c1"># non-standard tool_call fields</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">function_provider_specific_fields</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># non-standard function fields</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>                                 <span class="c1"># 唯一工具调用 ID</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>                               <span class="c1"># 工具名称</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">arguments</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>               <span class="c1"># 工具参数</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">extra_content</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>       <span class="c1"># provider 特定附加信息（例如 Gemini）</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">provider_specific_fields</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>    <span class="c1"># 非标准 tool_call 字段</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">function_provider_specific_fields</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># 非标准 function 字段</span>
 <a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
 <a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">to_openai_tool_call</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span> <span class="o">...</span>
 </code></pre></div>
-<h2 id="retry-strategy">Retry Strategy<a class="headerlink" href="#retry-strategy" title="Permanent link">&para;</a></h2>
+<h2 id="_1">重试策略<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Condition</th>
-<th>Action</th>
+<th>条件</th>
+<th>操作</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Transient error (429, 5xx, timeout, etc.)</td>
-<td>Retry with 1s/2s/4s backoff</td>
+<td>瞬时错误（429、5xx、超时等）</td>
+<td>以 1s/2s/4s 退避重试</td>
 </tr>
 <tr>
-<td>Non-transient error + image content</td>
-<td>Strip images, retry once</td>
+<td>非瞬时错误 + 图片内容</td>
+<td>移除图片，重试一次</td>
 </tr>
 <tr>
-<td>Non-transient error, no images</td>
-<td>Return error response</td>
+<td>非瞬时错误，无图片</td>
+<td>返回错误响应</td>
 </tr>
 </tbody>
 </table>
-<h2 id="built-in-providers">Built-in Providers<a class="headerlink" href="#built-in-providers" title="Permanent link">&para;</a></h2>
+<h2 id="provider">内置 Provider<a class="headerlink" href="#provider" title="Permanent link">&para;</a></h2>
 <h3 id="openaicompatprovider">OpenAICompatProvider<a class="headerlink" href="#openaicompatprovider" title="Permanent link">&para;</a></h3>
-<p>Covers all OpenAI-compatible APIs (OpenAI, DeepSeek, DashScope, OpenRouter,
-Ollama, vLLM, Gemini, Zhipu, Moonshot, Mistral, and more).</p>
+<p>覆盖所有 OpenAI 兼容 API（OpenAI、DeepSeek、DashScope、OpenRouter、Ollama、vLLM、Gemini、Zhipu、Moonshot、Mistral 等）。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">provider</span> <span class="o">=</span> <span class="n">OpenAICompatProvider</span><span class="p">(</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;sk-xxx&quot;</span><span class="p">,</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">api_base</span><span class="o">=</span><span class="s2">&quot;https://api.deepseek.com&quot;</span><span class="p">,</span>
@@ -1518,14 +1517,14 @@ Ollama, vLLM, Gemini, Zhipu, Moonshot, Mistral, and more).</p>
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">)</span>
 </code></pre></div>
 <h3 id="anthropicprovider">AnthropicProvider<a class="headerlink" href="#anthropicprovider" title="Permanent link">&para;</a></h3>
-<p>Native Anthropic SDK integration with prompt caching and extended thinking.</p>
+<p>原生 Anthropic SDK 集成，支持提示缓存和扩展思考。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">provider</span> <span class="o">=</span> <span class="n">AnthropicProvider</span><span class="p">(</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;sk-ant-xxx&quot;</span><span class="p">,</span>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">default_model</span><span class="o">=</span><span class="s2">&quot;claude-sonnet-4-20250514&quot;</span><span class="p">,</span>
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">)</span>
 </code></pre></div>
-<h2 id="providerspec-registry">ProviderSpec Registry<a class="headerlink" href="#providerspec-registry" title="Permanent link">&para;</a></h2>
-<p>29 providers defined in <code>llm_harness.adapters.providers.registry.PROVIDERS</code>.</p>
+<h2 id="providerspec">ProviderSpec 注册表<a class="headerlink" href="#providerspec" title="Permanent link">&para;</a></h2>
+<p>在 <code>llm_harness.adapters.providers.registry.PROVIDERS</code> 中定义了 29 个 provider。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">llm_harness.adapters.providers.registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">detect_provider</span><span class="p">,</span> <span class="n">instantiate_provider</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">spec</span> <span class="o">=</span> <span class="n">detect_provider</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;deepseek-chat&quot;</span><span class="p">)</span>

@@ -997,10 +997,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#config-model" class="md-nav__link">
+  <a href="#config_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Config Model
+        Config 模型
       
     </span>
   </a>
@@ -1008,15 +1008,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#sub-models" class="md-nav__link">
+  <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Sub-models
+        子模型
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Sub-models">
+    <nav class="md-nav" aria-label="子模型">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1102,22 +1102,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#loading" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Loading
+        加载
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Loading">
+    <nav class="md-nav" aria-label="加载">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#priority-highest-to-lowest" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Priority (highest to lowest)
+        优先级（从高到低）
       
     </span>
   </a>
@@ -1125,10 +1125,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#environment-variables" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Environment Variables
+        环境变量
       
     </span>
   </a>
@@ -1382,10 +1382,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#config-model" class="md-nav__link">
+  <a href="#config_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Config Model
+        Config 模型
       
     </span>
   </a>
@@ -1393,15 +1393,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#sub-models" class="md-nav__link">
+  <a href="#_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Sub-models
+        子模型
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Sub-models">
+    <nav class="md-nav" aria-label="子模型">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1487,22 +1487,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#loading" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Loading
+        加载
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Loading">
+    <nav class="md-nav" aria-label="加载">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#priority-highest-to-lowest" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Priority (highest to lowest)
+        优先级（从高到低）
       
     </span>
   </a>
@@ -1510,10 +1510,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#environment-variables" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Environment Variables
+        环境变量
       
     </span>
   </a>
@@ -1543,9 +1543,9 @@
 
 
 <h1 id="config">Config<a class="headerlink" href="#config" title="Permanent link">&para;</a></h1>
-<p>Configuration schema and loading. Pydantic models with env-var override support.</p>
-<p>Source: <code>llm_harness.config</code></p>
-<h2 id="config-model">Config Model<a class="headerlink" href="#config-model" title="Permanent link">&para;</a></h2>
+<p>配置模式和加载。支持环境变量覆盖的 Pydantic 模型。</p>
+<p>源码位置：<code>llm_harness.config</code></p>
+<h2 id="config_1">Config 模型<a class="headerlink" href="#config_1" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Config</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">agent</span><span class="p">:</span> <span class="n">AgentConfig</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">tools</span><span class="p">:</span> <span class="n">ToolsConfig</span>
@@ -1559,15 +1559,15 @@
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="nd">@property</span>
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">workspace_path</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span> <span class="o">...</span>
 </code></pre></div>
-<h2 id="sub-models">Sub-models<a class="headerlink" href="#sub-models" title="Permanent link">&para;</a></h2>
+<h2 id="_1">子模型<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
 <h3 id="agentconfig">AgentConfig<a class="headerlink" href="#agentconfig" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Field</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
+<th>字段</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
 </tr>
 </thead>
 <tbody>
@@ -1575,37 +1575,37 @@
 <td><code>model</code></td>
 <td><code>str</code></td>
 <td><code>"claude-sonnet-4-6"</code></td>
-<td>Model identifier</td>
+<td>模型标识符</td>
 </tr>
 <tr>
 <td><code>provider</code></td>
 <td><code>str</code></td>
 <td><code>"auto"</code></td>
-<td>Provider name or "auto"</td>
+<td>Provider 名称或 "auto"</td>
 </tr>
 <tr>
 <td><code>api_key</code></td>
 <td><code>str</code></td>
 <td><code>""</code></td>
-<td>API key (prefer env var)</td>
+<td>API 密钥（优先使用环境变量）</td>
 </tr>
 <tr>
 <td><code>api_base</code></td>
 <td><code>str</code></td>
 <td><code>""</code></td>
-<td>API base URL</td>
+<td>API 基础 URL</td>
 </tr>
 <tr>
 <td><code>max_tokens</code></td>
 <td><code>int</code></td>
 <td><code>4096</code></td>
-<td>Max completion tokens</td>
+<td>最大补全令牌数</td>
 </tr>
 <tr>
 <td><code>context_window_tokens</code></td>
 <td><code>int</code></td>
 <td><code>64000</code></td>
-<td>Context window size</td>
+<td>上下文窗口大小</td>
 </tr>
 </tbody>
 </table>
@@ -1613,21 +1613,21 @@
 <table>
 <thead>
 <tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
+<th>字段</th>
+<th>类型</th>
+<th>说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>enabled</code></td>
 <td><code>list[str]</code></td>
-<td>Tools to enable (15 default tools)</td>
+<td>启用的工具（15 个默认工具）</td>
 </tr>
 <tr>
 <td><code>disabled</code></td>
 <td><code>list[str]</code></td>
-<td>Tools to explicitly disable</td>
+<td>显式禁用的工具</td>
 </tr>
 </tbody>
 </table>
@@ -1635,10 +1635,10 @@
 <table>
 <thead>
 <tr>
-<th>Field</th>
-<th>Type</th>
-<th>Default</th>
-<th>Description</th>
+<th>字段</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
 </tr>
 </thead>
 <tbody>
@@ -1652,13 +1652,13 @@
 <td><code>allowed_tools</code></td>
 <td><code>list[str]</code></td>
 <td><code>[]</code></td>
-<td>Explicit tool allowlist</td>
+<td>显式工具允许列表</td>
 </tr>
 <tr>
 <td><code>denied_tools</code></td>
 <td><code>list[str]</code></td>
 <td><code>[]</code></td>
-<td>Explicit tool denylist</td>
+<td>显式工具拒绝列表</td>
 </tr>
 </tbody>
 </table>
@@ -1666,9 +1666,9 @@
 <table>
 <thead>
 <tr>
-<th>Field</th>
-<th>Type</th>
-<th>Default</th>
+<th>字段</th>
+<th>类型</th>
+<th>默认值</th>
 </tr>
 </thead>
 <tbody>
@@ -1683,9 +1683,9 @@
 <table>
 <thead>
 <tr>
-<th>Field</th>
-<th>Type</th>
-<th>Default</th>
+<th>字段</th>
+<th>类型</th>
+<th>默认值</th>
 </tr>
 </thead>
 <tbody>
@@ -1705,9 +1705,9 @@
 <table>
 <thead>
 <tr>
-<th>Field</th>
-<th>Type</th>
-<th>Default</th>
+<th>字段</th>
+<th>类型</th>
+<th>默认值</th>
 </tr>
 </thead>
 <tbody>
@@ -1722,9 +1722,9 @@
 <table>
 <thead>
 <tr>
-<th>Field</th>
-<th>Type</th>
-<th>Default</th>
+<th>字段</th>
+<th>类型</th>
+<th>默认值</th>
 </tr>
 </thead>
 <tbody>
@@ -1740,38 +1740,38 @@
 </tr>
 </tbody>
 </table>
-<h2 id="loading">Loading<a class="headerlink" href="#loading" title="Permanent link">&para;</a></h2>
+<h2 id="_2">加载<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">llm_harness.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_config</span><span class="p">,</span> <span class="n">Config</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># From YAML</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># 从 YAML</span>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">config</span> <span class="o">=</span> <span class="n">load_config</span><span class="p">(</span><span class="s2">&quot;harness.yaml&quot;</span><span class="p">)</span>
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># With overrides</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># 带覆盖参数</span>
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">config</span> <span class="o">=</span> <span class="n">load_config</span><span class="p">(</span><span class="s2">&quot;harness.yaml&quot;</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;claude-sonnet-4-6&quot;</span><span class="p">,</span> <span class="n">provider</span><span class="o">=</span><span class="s2">&quot;anthropic&quot;</span><span class="p">)</span>
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># From env</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># 从环境变量</span>
 <a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># LLM_HARNESS_MODEL=deepseek-chat LLM_HARNESS_API_KEY=sk-xxx</span>
 <a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">config</span> <span class="o">=</span> <span class="n">load_config</span><span class="p">()</span>
 </code></pre></div>
-<h3 id="priority-highest-to-lowest">Priority (highest to lowest)<a class="headerlink" href="#priority-highest-to-lowest" title="Permanent link">&para;</a></h3>
+<h3 id="_3">优先级（从高到低）<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
 <ol>
-<li>CLI arguments (<code>model=</code>, <code>provider=</code>)</li>
-<li>Environment variables (<code>LLM_HARNESS_MODEL</code>, <code>LLM_HARNESS_API_KEY</code>, etc.)</li>
-<li>YAML config file</li>
-<li>Pydantic defaults</li>
+<li>CLI 参数（<code>model=</code>、<code>provider=</code>）</li>
+<li>环境变量（<code>LLM_HARNESS_MODEL</code>、<code>LLM_HARNESS_API_KEY</code> 等）</li>
+<li>YAML 配置文件</li>
+<li>Pydantic 默认值</li>
 </ol>
-<h3 id="environment-variables">Environment Variables<a class="headerlink" href="#environment-variables" title="Permanent link">&para;</a></h3>
+<h3 id="_4">环境变量<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Variable</th>
-<th>Maps To</th>
+<th>变量</th>
+<th>映射到</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>LLM_HARNESS_CONFIG</code></td>
-<td>Config file path</td>
+<td>配置文件路径</td>
 </tr>
 <tr>
 <td><code>LLM_HARNESS_MODEL</code></td>
