@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from collections.abc import Awaitable, Callable
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol
@@ -40,6 +40,31 @@ class TurnResult:
     tools_used: list[str] = field(default_factory=list)
     messages: list[dict[str, Any]] = field(default_factory=list)
     new_messages_start: int = 0
+
+
+@dataclass
+class StreamEvent:
+    """A single event yielded during a streaming agent turn.
+
+    ============= ======
+    type          meaning
+    ============= ======
+    ``delta``     Text chunk from the LLM (may be zero or more).
+    ``tool_call`` Tool invocation about to execute.
+    ``tool_result``Tool result received.
+    ``done``      Turn complete (**always** the final event).
+    ============= ======
+    """
+
+    type: str
+    content: str = ""
+    tool_name: str = ""
+    tool_args: dict[str, Any] | None = None
+    tool_output: str = ""
+    final_content: str | None = None
+    tools_used: list[str] = field(default_factory=list)
+    _messages: list[dict[str, Any]] = field(default_factory=list)
+    _new_messages_start: int = 0
 
 
 class AgentLoop:
@@ -115,6 +140,92 @@ class AgentLoop:
         result.final_content = "Max iterations reached."
         result.messages = messages
         return result
+
+    # ------------------------------------------------------------------
+    # Streaming variant — yields StreamEvent throughout the ReAct loop
+    # ------------------------------------------------------------------
+
+    async def run_stream(
+        self, msg: Any, history: list[dict[str, Any]], *, cwd: Path | None = None,
+    ) -> AsyncGenerator[StreamEvent, None]:
+        """Async-generator version of :meth:`run` that yields :class:`StreamEvent` items.
+
+        Text chunks arrive as ``StreamEvent(type="delta", content=...)``,
+        tool invocations as ``StreamEvent(type="tool_call", ...)``, and the
+        turn always ends with ``StreamEvent(type="done", ...)``.
+        """
+        import asyncio as _asyncio
+
+        workspace = cwd or Path("/workspace")
+        result = TurnResult()
+        messages = self._build_context(msg, history)
+        if _asyncio.iscoroutine(messages):
+            messages = await messages
+
+        result.new_messages_start = len(messages)
+
+        for _ in range(self.max_iterations):
+            # Collect deltas so the event loop can forward them
+            deltas: list[str] = []
+
+            async def _on_delta(chunk: str) -> None:
+                deltas.append(chunk)
+
+            response = await self.provider.chat_stream_with_retry(
+                messages=messages,
+                tools=self.tools.to_api_schema(self.provider.api_format),
+                model=self.model,
+                on_content_delta=_on_delta,
+            )
+
+            # Yield buffered deltas
+            for chunk in deltas:
+                yield StreamEvent(type="delta", content=chunk)
+
+            if not response.has_tool_calls:
+                result.final_content = response.content or ""
+                messages.append({"role": "assistant", "content": response.content or ""})
+                result.messages = messages
+                yield StreamEvent(type="done", final_content=result.final_content,
+                                  tools_used=result.tools_used,
+                                  _messages=messages,
+                                  _new_messages_start=result.new_messages_start)
+                return
+
+            # Tool call phase
+            tool_call_dicts = [tc.to_openai_tool_call() for tc in response.tool_calls]
+            messages.append({"role": "assistant", "content": response.content or "",
+                             "tool_calls": tool_call_dicts})
+
+            for tc in response.tool_calls:
+                args = tc.arguments if isinstance(tc.arguments, dict) else {}
+                yield StreamEvent(type="tool_call", tool_name=tc.name, tool_args=args)
+
+                if self._emitter:
+                    await self._emitter.tool_executing(tc.name, args)
+                elif self._on_event:
+                    await self._on_event("tool:executing", {"name": tc.name})
+
+                tool_result = await self._execute_tool_call(tc, msg, workspace)
+                tool_result = tool_result[:self.TOOL_RESULT_MAX_CHARS]
+                if len(tool_result) >= self.TOOL_RESULT_MAX_CHARS:
+                    tool_result += "\n... truncated"
+
+                messages.append({"role": "tool", "tool_call_id": tc.id,
+                                 "name": tc.name, "content": tool_result})
+                result.tools_used.append(tc.name)
+
+                yield StreamEvent(type="tool_result", tool_name=tc.name, tool_output=tool_result)
+
+            if self._on_event:
+                await self._on_event("loop:iteration", {"tools_used": result.tools_used})
+
+        result.final_content = "Max iterations reached."
+        result.messages = messages
+        yield StreamEvent(type="done", final_content=result.final_content,
+                          tools_used=result.tools_used,
+                          _messages=messages,
+                          _new_messages_start=result.new_messages_start)
 
     async def _execute_tool_call(self, tc: Any, msg: Any, workspace: Path) -> str:
         """Execute a single tool call. Each step short-circuits on error."""
