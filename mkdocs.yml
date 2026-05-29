@@ -1,5 +1,7 @@
 site_name: llm-harness
-site_description: Pure async, dependency-injected Agent development framework
+site_description: 纯异步、依赖注入的 AI Agent 开发框架
+repo_url: https://github.com/H-Mr/llm-harness
+repo_name: H-Mr/llm-harness
 theme:
   name: material
   features:
