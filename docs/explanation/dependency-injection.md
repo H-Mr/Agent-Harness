@@ -1,36 +1,31 @@
-# Dependency Injection
+# 依赖注入
 
-llm-harness takes a strong stance: **every dependency is explicit, every
-parameter is required.**
+llm-harness 采取了一个强硬的立场：**每个依赖都是显式的，每个参数都是必需的。**
 
-## Why No Defaults?
+## 为什么没有默认值？
 
 ```python
-# llm-harness style — everything explicit
+# llm-harness 风格 — 一切显式
 harness = Harness(
     provider=OpenAICompatProvider(api_key="sk-xxx"),
     model="deepseek-chat",
-    tools=my_tools,        # required
-    sandbox=my_sandbox,    # required
-    memory=my_memory,      # optional — explicit None
-    permissions=my_perms,  # optional — explicit None
+    tools=my_tools,        # 必需
+    sandbox=my_sandbox,    # 必需
+    memory=my_memory,      # 可选 — 显式传入 None
+    permissions=my_perms,  # 可选 — 显式传入 None
 )
 ```
 
-This is deliberate:
+这是经过深思熟虑的设计：
 
-1. **No hidden coupling.** You can see every component the Agent depends on
-   at the call site.
-2. **No filesystem side-effects.** The constructor never reads files,
-   environment variables, or global config.
-3. **Testable.** Every dependency is replaceable with a mock.
-4. **Auditable.** Static analysis tools can verify all dependencies are
-   provided.
+1. **没有隐藏耦合。** 你可以在调用处看到 Agent 依赖的每一个组件。
+2. **没有文件系统副作用。** 构造函数从不读取文件、环境变量或全局配置。
+3. **可测试。** 每个依赖都可以替换为 mock。
+4. **可审计。** 静态分析工具可以验证所有依赖都已提供。
 
-## Callback Injection
+## 回调注入
 
-Behavior that varies between deployments is injected as callbacks, not
-subclass overrides:
+因部署环境而异的行为通过回调注入，而非子类覆盖：
 
 ```python
 loop = AgentLoop(
@@ -46,14 +41,11 @@ loop = AgentLoop(
 )
 ```
 
-This means you can change the system prompt, permission logic, or error
-handling without subclassing `AgentLoop`.
+这意味着你无需子类化 `AgentLoop` 即可更改系统提示词、权限逻辑或错误处理。
 
-## Constructor vs Factory
+## 构造函数 vs 工厂
 
-`Harness` is the only "factory" in the framework. `ToolFactory` is a
-convenience for building the standard 15 tools with injected dependencies.
-For custom setups, you can bypass both and wire `AgentLoop` + `Agent` directly:
+`Harness` 是框架中唯一的"工厂"。`ToolFactory` 是一个便利工具，用于构建标准的 15 个工具及其注入的依赖。对于自定义设置，你可以绕过这两者，直接连接 `AgentLoop` + `Agent`：
 
 ```python
 loop = AgentLoop(provider=..., tools=..., model=...,
@@ -62,12 +54,12 @@ agent = Agent(loop=loop)
 result = await agent.process(msg, session=session, cwd=cwd)
 ```
 
-## Comparison
+## 对比
 
-| Pattern | llm-harness | Typical Framework |
+| 特性 | llm-harness | 典型框架 |
 |---------|-------------|-------------------|
-| Provider | Constructor param | Env var / global singleton |
-| Tools | Injected `ToolRegistry` | Auto-discovered / decorator-registered |
-| Config | Pydantic model passed in | YAML file read internally |
-| Session | Caller passes `Session` | Framework manages lifecycle |
-| Workspace | Caller passes `cwd: Path` | Framework resolves internally |
+| 提供者 | 构造函数参数 | 环境变量 / 全局单例 |
+| 工具 | 注入的 `ToolRegistry` | 自动发现 / 装饰器注册 |
+| 配置 | 传入的 Pydantic 模型 | 内部读取 YAML 文件 |
+| 会话 | 调用者传入 `Session` | 框架管理生命周期 |
+| 工作区 | 调用者传入 `cwd: Path` | 框架内部解析 |

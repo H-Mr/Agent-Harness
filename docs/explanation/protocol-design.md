@@ -1,38 +1,32 @@
-# Protocol Design
+# 协议设计
 
-All backend adapters in llm-harness use Python `Protocol` classes from
-`typing.Protocol`. This is a deliberate architectural choice.
+llm-harness 中的所有后端适配器都使用 Python 的 `Protocol` 类（来自 `typing.Protocol`）。这是一个经过深思熟虑的架构选择。
 
-## Structural vs Nominal Subtyping
+## 结构子类型 vs 名义子类型
 
 ```python
-# Protocol (structural) — matches any object with these methods
+# Protocol（结构型）— 匹配任何拥有这些方法的对象
 class SandboxBackend(Protocol):
     async def read_file(self, session_key: str, path: str) -> str: ...
     async def write_file(self, session_key: str, path: str, content: str) -> None: ...
 
-# ABC (nominal) — requires explicit inheritance
+# ABC（名义型）— 需要显式继承
 class SandboxBackend(ABC):
     @abstractmethod
     async def read_file(self, session_key: str, path: str) -> str: ...
 ```
 
-With `Protocol`, you can implement `SRTSandboxBackend` without importing or
-inheriting from `SandboxBackend`. The type checker validates compatibility
-at the usage site, not the definition site.
+使用 `Protocol`，你可以在不导入或不继承 `SandboxBackend` 的情况下实现 `SRTSandboxBackend`。类型检查器在使用处验证兼容性，而非在定义处。
 
-## Why Protocol?
+## 为什么选择 Protocol？
 
-1. **Zero coupling.** Your backend implementation has no import dependency
-   on llm-harness. You can put it in a separate package.
-2. **Minimal interface.** Each Protocol only declares the methods the
-   framework actually calls. No `close()`, `connect()`, or `configure()`
-   unless the framework needs them.
-3. **Easy mocking.** In tests, `AsyncMock()` satisfies any Protocol.
+1. **零耦合。** 你的后端实现对 llm-harness 没有导入依赖。你可以将其放在一个独立的包中。
+2. **最小化接口。** 每个 Protocol 只声明框架实际调用的方法。除非框架需要，否则没有 `close()`、`connect()` 或 `configure()`。
+3. **易于模拟。** 在测试中，`AsyncMock()` 可以满足任何 Protocol。
 
-## All Core Protocols
+## 所有核心协议
 
-### SandboxBackend (8 methods)
+### SandboxBackend（8 个方法）
 
 ```
 create_session(session_key) → SandboxSession
@@ -45,7 +39,7 @@ grep(session_key, pattern, path) → list[str]
 execute(session_key, command, *, cwd, env, timeout) → ExecResult
 ```
 
-### MemoryBackend (5 methods)
+### MemoryBackend（5 个方法）
 
 ```
 get_context(namespace) → str
@@ -55,7 +49,7 @@ add_history(namespace, entry)
 consolidate(namespace, messages, provider, model) → bool
 ```
 
-### AgentBackend (3 methods)
+### AgentBackend（3 个方法）
 
 ```
 spawn(config, origin_session_key, origin_account) → SpawnResult
@@ -63,7 +57,7 @@ send_message(agent_id, message) → bool
 stop(agent_id) → bool
 ```
 
-### SessionBackend (3 methods)
+### SessionBackend（3 个方法）
 
 ```
 load(session_key) → dict | None
@@ -71,7 +65,7 @@ save(session_key, state)
 list_keys() → list[str]
 ```
 
-### ObservabilityBackend (3 methods)
+### ObservabilityBackend（3 个方法）
 
 ```
 emit(event_type, payload)
@@ -79,19 +73,18 @@ subscribe(event_type, handler)
 unsubscribe(event_type, handler)
 ```
 
-## Adding a New Backend
+## 添加新后端
 
-Implement the Protocol methods. No imports from llm-harness needed:
+实现 Protocol 方法即可。无需从 llm-harness 导入：
 
 ```python
 class MySandbox:
     async def create_session(self, session_key: str) -> SandboxSession:
         return SandboxSession(session_key=session_key, volume_path="/tmp", sandbox_id="my")
-    # ... implement remaining 7 methods
+    # ... 实现其余 7 个方法
 
-# Usage
+# 使用
 harness = Harness(..., sandbox=MySandbox())
 ```
 
-The type checker verifies `MySandbox` satisfies `SandboxBackend` at the
-`Harness(...)` call site.
+类型检查器会在 `Harness(...)` 调用处验证 `MySandbox` 是否满足 `SandboxBackend`。
