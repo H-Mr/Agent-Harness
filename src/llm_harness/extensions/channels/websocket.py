@@ -181,4 +181,4 @@ class WebSocketChannel(BaseChannel):
         try:
             await ws.send(json.dumps(payload, ensure_ascii=False))
         except Exception:
-            pass
+            logger.debug("WebSocket send failed", exc_info=True)

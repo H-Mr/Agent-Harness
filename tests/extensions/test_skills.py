@@ -90,16 +90,16 @@ class TestLoadSkillsFromDirs:
     """load_skills_from_dirs directory scanning."""
 
     def test_load_from_directory(self, tmp_workspace: Path):
-        """Loads skills from a directory containing <name>/CLAUDE.md files."""
+        """Loads skills from a directory containing <name>/SKILL.md files."""
         skill_dir = tmp_workspace / "my-skill"
         skill_dir.mkdir()
-        (skill_dir / "CLAUDE.md").write_text("---\nname: my-skill\ndescription: A test skill\n---\n\nContent", encoding="utf-8")
+        (skill_dir / "SKILL.md").write_text("---\nname: my-skill\ndescription: A test skill\n---\n\nContent", encoding="utf-8")
 
         skills = load_skills_from_dirs([tmp_workspace])
         assert len(skills) == 1
         assert skills[0].name == "my-skill"
         assert skills[0].description == "A test skill"
-        assert skills[0].path == str((skill_dir / "CLAUDE.md").resolve())
+        assert skills[0].path == str((skill_dir / "SKILL.md").resolve())
 
     def test_load_returns_empty_for_none(self):
         """Returns empty list when directories is None."""
@@ -122,14 +122,14 @@ class TestLoadSkillsFromDirs:
         """Skills with the same path are only loaded once."""
         skill_dir = tmp_workspace / "dup-skill"
         skill_dir.mkdir()
-        (skill_dir / "CLAUDE.md").write_text("---\nname: dup-skill\n---\n\nContent", encoding="utf-8")
+        (skill_dir / "SKILL.md").write_text("---\nname: dup-skill\n---\n\nContent", encoding="utf-8")
 
         # Pass the same directory twice
         skills = load_skills_from_dirs([tmp_workspace, tmp_workspace])
         assert len(skills) == 1
 
     def test_ignores_dirs_without_claude_md(self, tmp_workspace: Path):
-        """Directories without CLAUDE.md are skipped."""
+        """Directories without SKILL.md are skipped."""
         empty_dir = tmp_workspace / "empty"
         empty_dir.mkdir()
         skills = load_skills_from_dirs([tmp_workspace])
@@ -140,7 +140,7 @@ class TestLoadSkillsFromDirs:
         for name in ("skill-a", "skill-b", "skill-c"):
             d = tmp_workspace / name
             d.mkdir()
-            (d / "CLAUDE.md").write_text(f"---\nname: {name}\n---\n\nContent", encoding="utf-8")
+            (d / "SKILL.md").write_text(f"---\nname: {name}\n---\n\nContent", encoding="utf-8")
 
         skills = load_skills_from_dirs([tmp_workspace])
         assert len(skills) == 3
@@ -150,7 +150,7 @@ class TestLoadSkillsFromDirs:
         """source parameter defaults to 'user'."""
         d = tmp_workspace / "src-skill"
         d.mkdir()
-        (d / "CLAUDE.md").write_text("---\nname: src-skill\n---\n\nContent", encoding="utf-8")
+        (d / "SKILL.md").write_text("---\nname: src-skill\n---\n\nContent", encoding="utf-8")
         skills = load_skills_from_dirs([tmp_workspace])
         assert skills[0].source == "user"
 
@@ -158,7 +158,7 @@ class TestLoadSkillsFromDirs:
         """source parameter can be overridden."""
         d = tmp_workspace / "custom-skill"
         d.mkdir()
-        (d / "CLAUDE.md").write_text("---\nname: custom-skill\n---\n\nContent", encoding="utf-8")
+        (d / "SKILL.md").write_text("---\nname: custom-skill\n---\n\nContent", encoding="utf-8")
         skills = load_skills_from_dirs([tmp_workspace], source="builtin")
         assert skills[0].source == "builtin"
 

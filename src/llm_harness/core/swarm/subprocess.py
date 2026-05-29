@@ -5,9 +5,12 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import shutil
 import sys
 from pathlib import Path
 
+from llm_harness.adapters.observability.emit_helpers import EventEmitter
+from llm_harness.adapters.observability.events import SubagentCompleted, SubagentSpawned
 from llm_harness.core.bus.events import InboundMessage
 from llm_harness.core.bus.queue import MessageBus
 from llm_harness.core.swarm.backend import AgentBackend, SpawnConfig, SpawnResult
@@ -17,12 +20,14 @@ logger = logging.getLogger(__name__)
 
 
 class SubprocessBackend:
-    def __init__(self, bus: MessageBus, workspace_root: Path | None = None, mailbox: Mailbox | None = None):
+    def __init__(self, bus: MessageBus, workspace_root: Path | None = None, mailbox: Mailbox | None = None, *, emitter: EventEmitter | None = None):
         self.bus = bus
         self._workspace_root = Path(workspace_root) if workspace_root else Path.cwd()
         self.mailbox = mailbox or Mailbox(Path.home() / ".llm-harness" / "mail")
+        self._emitter = emitter
         self._processes: dict[str, asyncio.subprocess.Process] = {}
         self._session_keys: dict[str, str] = {}
+        self._watch_tasks: dict[str, asyncio.Task] = {}
 
     async def spawn(self, config: SpawnConfig, origin_session_key: str = "", origin_account: str = "") -> SpawnResult:
         agent_id = f"{config.agent_name}-{os.urandom(4).hex()}"
@@ -42,7 +47,10 @@ class SubprocessBackend:
         if config.model:
             worker_cmd.extend(["--model", config.model])
 
-        cmd = ["srt", f"--read={account_ws}", f"--write={account_ws}", "--", *worker_cmd]
+        if shutil.which("srt"):
+            cmd = ["srt", f"--read={account_ws}", f"--write={account_ws}", "--", *worker_cmd]
+        else:
+            cmd = worker_cmd
 
         try:
             proc = await asyncio.create_subprocess_exec(
@@ -58,7 +66,11 @@ class SubprocessBackend:
                 await proc.stdin.drain()
                 proc.stdin.close()
 
-            asyncio.create_task(self._watch(agent_id, proc))
+            task = asyncio.create_task(self._watch(agent_id, proc))
+            self._watch_tasks[agent_id] = task
+            task.add_done_callback(lambda t: self._watch_tasks.pop(agent_id, None))
+            if self._emitter:
+                await self._emitter.send(SubagentSpawned(task_id=agent_id, label=config.agent_name))
             return SpawnResult(agent_id=agent_id)
         except Exception as e:
             return SpawnResult(agent_id=agent_id, success=False, error=str(e))
@@ -77,6 +89,9 @@ class SubprocessBackend:
                 content=f"<task-notification><task_id>{agent_id}</task_id><status>{'completed' if proc.returncode==0 else 'failed'}</status><result>{result}</result></task-notification>",
             )
             await self.bus.publish_inbound(msg)
+            if self._emitter:
+                status = "ok" if proc.returncode == 0 else "error"
+                await self._emitter.send(SubagentCompleted(task_id=agent_id, label=agent_id, status=status))
         except Exception:
             logger.exception("Watcher failed for %s", agent_id)
         finally:

@@ -1,6 +1,5 @@
 """Tests for swarm module — agent definitions, mailbox, and backends."""
 
-import asyncio
 import json
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
@@ -12,7 +11,6 @@ from llm_harness.core.swarm.definitions import (
 )
 from llm_harness.core.swarm.mailbox import Mailbox
 from llm_harness.core.swarm.backend import SpawnConfig, SpawnResult
-from llm_harness.core.swarm.in_process import InProcessBackend
 
 
 # ---------------------------------------------------------------------------
@@ -79,13 +77,12 @@ class TestMailbox:
         assert messages[0]["payload"]["content"] == "first"
         assert messages[1]["payload"]["content"] == "second"
 
-    def test_poll_reads_without_deleting(self, tmp_workspace):
-        """Mailbox.poll reads messages without deleting them."""
+    def test_poll_cursor_avoids_duplicates(self, tmp_workspace):
+        """Cursor prevents returning already-read messages on re-poll."""
         mb = Mailbox(tmp_workspace)
         mb.put("agent1", "text", {"content": "msg"})
         assert len(mb.poll("agent1")) == 1
-        # Second poll returns same message (not deleted)
-        assert len(mb.poll("agent1")) == 1
+        assert len(mb.poll("agent1")) == 0  # cursor advanced, no new messages
 
     def test_ack_deletes_messages(self, tmp_workspace):
         """Mailbox.ack deletes the first N messages after processing."""
@@ -95,7 +92,10 @@ class TestMailbox:
         mb.put("agent1", "text", {"content": "msg3"})
         assert len(mb.poll("agent1")) == 3
         mb.ack("agent1", 2)
-        assert len(mb.poll("agent1")) == 1
+        # After ack, 2 files deleted, 1 remains
+        mb2 = Mailbox(tmp_workspace)
+        remaining = len(mb2.poll("agent1"))
+        assert remaining == 1
 
     def test_poll_empty_inbox(self, tmp_workspace):
         """Polling a non-existent inbox returns an empty list."""
@@ -129,35 +129,3 @@ class TestDataClasses:
         assert result.error is None
 
 
-# ---------------------------------------------------------------------------
-# InProcessBackend
-# ---------------------------------------------------------------------------
-
-class TestInProcessBackend:
-    @pytest.mark.asyncio
-    async def test_spawn_without_loop_fn_returns_error(self):
-        """spawn returns failure when no loop_fn is configured."""
-        backend = InProcessBackend()
-        config = SpawnConfig(agent_name="test", prompt="hi", tool_names=[])
-        result = await backend.spawn(config)
-        assert result.success is False
-        assert "No loop_fn" in (result.error or "")
-
-    @pytest.mark.asyncio
-    async def test_agent_contexts_cleanup_after_stop(self):
-        """Stopping an agent removes it from _tasks."""
-        backend = InProcessBackend()
-        backend.set_loop_fn(lambda p, a, n, t: asyncio.sleep(999))
-        config = SpawnConfig(agent_name="test", prompt="hi", tool_names=[])
-        result = await backend.spawn(config)
-        assert result.success
-        assert result.agent_id in backend._tasks
-        await backend.stop(result.agent_id)
-        assert result.agent_id not in backend._tasks
-
-    @pytest.mark.asyncio
-    async def test_send_message_to_nonexistent_agent(self):
-        """send_message returns False for unknown agent."""
-        backend = InProcessBackend()
-        result = await backend.send_message("no-such-agent", "hello")
-        assert result is False

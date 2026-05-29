@@ -302,3 +302,57 @@ async def connect_mcp_servers(
             logger.info("MCP server '%s': connected, %d tools registered", name, registered_count)
         except Exception as e:
             logger.error("MCP server '%s': failed to connect: %s", name, e)
+
+
+class MCPServerConnection:
+    """Quick single-server connection — one liner for simple use cases.
+
+    For multi-server orchestration use :func:`connect_mcp_servers` instead.
+
+    Usage::
+
+        async with MCPServerConnection(command=["python", "-m", "my_mcp"]) as srv:
+            for tool in srv.tools:
+                registry.register(tool)
+    """
+
+    def __init__(self, *, command: list[str] | None = None, url: str | None = None) -> None:
+        self._command = command
+        self._url = url
+        self._session: Any = None
+        self._tools: list[MCPToolWrapper] = []
+
+    @property
+    def tools(self) -> list[MCPToolWrapper]:
+        return self._tools
+
+    async def __aenter__(self) -> MCPServerConnection:
+        from mcp import ClientSession, StdioServerParameters
+
+        if self._command:
+            from mcp.client.stdio import stdio_client
+
+            params = StdioServerParameters(command=self._command[0], args=self._command[1:])
+            read, write = await stdio_client(params).__aenter__()
+            self._session = ClientSession(read, write)
+            await self._session.__aenter__()
+        elif self._url:
+            from mcp.client.sse import sse_client
+
+            read, write = await sse_client(self._url).__aenter__()
+            self._session = ClientSession(read, write)
+            await self._session.__aenter__()
+        else:
+            raise ValueError("Either 'command' or 'url' must be provided")
+
+        await self._session.initialize()
+        result = await self._session.list_tools()
+        for t in result.tools:
+            self._tools.append(
+                MCPToolWrapper(self._session, "mcp", t, tool_timeout=30)
+            )
+        return self
+
+    async def __aexit__(self, *args: Any) -> None:
+        if self._session:
+            await self._session.__aexit__(*args)

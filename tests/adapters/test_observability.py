@@ -98,52 +98,31 @@ class TestDefaultObservabilityBackend:
         assert results == ["ok"]
 
     # ------------------------------------------------------------------
-    # Tracking (JSONL file)
+    # Persistence via on_emit callback
     # ------------------------------------------------------------------
 
-    async def test_track_mode_writes_to_events_jsonl(self, tmp_workspace: Path) -> None:
-        """When track_dir is set, emit must write an entry to events.jsonl."""
-        backend = DefaultObservabilityBackend(track_dir=tmp_workspace)
+    async def test_on_emit_receives_all_events(self) -> None:
+        """on_emit callback receives every emitted event."""
+        events = []
+
+        async def track(event_type, payload):
+            events.append((event_type, payload))
+
+        backend = DefaultObservabilityBackend(on_emit=track)
         await backend.emit("test_event", {"foo": "bar"})
+        assert len(events) == 1
+        assert events[0] == ("test_event", {"foo": "bar"})
 
-        track_file = tmp_workspace / "events.jsonl"
-        assert track_file.exists()
-        lines = track_file.read_text(encoding="utf-8").strip().splitlines()
-        assert len(lines) == 1
-        record = json.loads(lines[0])
-        assert record["type"] == "test_event"
-        assert record["payload"] == {"foo": "bar"}
-        assert "ts" in record
-
-    async def test_multiple_concurrent_emits_no_corruption(
-        self, tmp_workspace: Path,
-    ) -> None:
-        """Multiple concurrent emits must not corrupt the events.jsonl file."""
+    async def test_on_emit_concurrent(self) -> None:
+        """Multiple concurrent emits all reach on_emit."""
         import asyncio
 
-        backend = DefaultObservabilityBackend(track_dir=tmp_workspace)
+        events = []
 
-        async def emit_task(idx: int) -> None:
-            for _ in range(10):
-                await backend.emit("conc", {"idx": idx})
+        async def track(event_type, payload):
+            events.append(payload["idx"])
 
-        tasks = [emit_task(i) for i in range(5)]
+        backend = DefaultObservabilityBackend(on_emit=track)
+        tasks = [backend.emit("conc", {"idx": i}) for i in range(50)]
         await asyncio.gather(*tasks)
-
-        track_file = tmp_workspace / "events.jsonl"
-        lines = track_file.read_text(encoding="utf-8").strip().splitlines()
-        # 5 tasks * 10 emits each
-        assert len(lines) == 50
-        # Every line must be valid JSON
-        for line in lines:
-            record = json.loads(line)
-            assert record["type"] == "conc"
-            assert "idx" in record["payload"]
-
-    async def test_track_mode_creates_directory(self, tmp_workspace: Path) -> None:
-        """The track_dir must be created if it does not exist."""
-        nested = tmp_workspace / "nested" / "track"
-        backend = DefaultObservabilityBackend(track_dir=nested)
-        await backend.emit("init", {})
-        assert nested.exists()
-        assert (nested / "events.jsonl").exists()
+        assert len(events) == 50

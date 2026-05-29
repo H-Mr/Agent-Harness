@@ -10,6 +10,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol
 
+from llm_harness.adapters.observability.emit_helpers import EventEmitter
+from llm_harness.adapters.observability.events import ErrorEvent, ToolExecutionCompleted
 from llm_harness.adapters.providers.base import LLMProvider
 from llm_harness.core.tools.base import BaseTool, ToolExecutionContext, ToolRegistry
 
@@ -53,6 +55,7 @@ class AgentLoop:
         on_tool_check: ToolCheckCallback,
         on_error: ErrorCallback,
         on_event: EventCallback | None = None,
+        emitter: EventEmitter | None = None,
         max_iterations: int = 40,
     ):
         self.provider = provider
@@ -62,6 +65,7 @@ class AgentLoop:
         self._check_tool = on_tool_check
         self._on_error = on_error
         self._on_event = on_event
+        self._emitter = emitter
         self.max_iterations = max_iterations
 
     async def run(self, msg: Any, history: list[dict[str, Any]], *, cwd: Path | None = None) -> TurnResult:
@@ -83,6 +87,7 @@ class AgentLoop:
 
             if not response.has_tool_calls:
                 result.final_content = response.content or ""
+                messages.append({"role": "assistant", "content": response.content or ""})
                 result.messages = messages
                 return result
 
@@ -91,7 +96,9 @@ class AgentLoop:
                              "tool_calls": tool_call_dicts})
 
             for tc in response.tool_calls:
-                if self._on_event:
+                if self._emitter:
+                    await self._emitter.tool_executing(tc.name, tc.arguments if isinstance(tc.arguments, dict) else {})
+                elif self._on_event:
                     await self._on_event("tool:executing", {"name": tc.name})
 
                 tool_result = await self._execute_tool_call(tc, msg, workspace)
@@ -113,6 +120,8 @@ class AgentLoop:
         """Execute a single tool call. Each step short-circuits on error."""
         tool = self.tools.get(tc.name)
         if tool is None:
+            if self._emitter:
+                await self._emitter.send(ErrorEvent(message=f"Unknown tool: {tc.name}", recoverable=True))
             return f"Error: unknown tool '{tc.name}'"
 
         # 1. Parse arguments → Pydantic model
@@ -122,6 +131,8 @@ class AgentLoop:
         try:
             parsed = tool.input_model(**args)
         except Exception as e:
+            if self._emitter:
+                await self._emitter.send(ErrorEvent(message=f"Invalid args for {tc.name}: {e}", recoverable=True))
             return f"Error: invalid args for '{tc.name}': {e}"
 
         # 2. Permission check
@@ -137,6 +148,10 @@ class AgentLoop:
         ctx = ToolExecutionContext(cwd=workspace, metadata={"session_key": session_key, "account": account})
         try:
             r = await tool.execute(parsed, ctx)
+            if self._emitter:
+                await self._emitter.send(ToolExecutionCompleted(tool_name=tc.name, output=r.output, is_error=r.is_error))
             return r.output
         except Exception as e:
+            if self._emitter:
+                await self._emitter.send(ErrorEvent(message=f"Error executing {tc.name}: {e}", recoverable=True))
             return f"Error executing '{tc.name}': {e}"

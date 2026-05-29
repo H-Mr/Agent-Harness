@@ -10,7 +10,6 @@ from llm_harness.adapters.memory.consolidator import (
     estimate_message_tokens,
 )
 from llm_harness.adapters.memory.policy import TokenBudgetPolicy
-from llm_harness.core.session.manager import SessionManager
 from llm_harness.core.session.session import Session
 
 
@@ -31,13 +30,12 @@ def stub_consolidator(tmp_workspace: Path) -> MemoryConsolidator:
     """Create a MemoryConsolidator with stubs and a mock backend."""
     backend = AsyncMock()
     backend.consolidate = AsyncMock(return_value=True)
-    sessions = SessionManager(AsyncMock())
     cons = MemoryConsolidator(
         backend=backend,
-        sessions=sessions,
         context_window_tokens=128_000,
         build_messages=_build_stub_messages,
         get_tool_definitions=_stub_tool_defs,
+        on_save=AsyncMock(),
     )
     return cons
 
@@ -116,14 +114,13 @@ class TestMemoryConsolidator:
         backend.consolidate = AsyncMock(return_value=True)
 
         # Use a very small budget so the session is trivially over budget
-        sessions = SessionManager(AsyncMock())
         cons = MemoryConsolidator(
             backend=backend,
-            sessions=sessions,
             context_window_tokens=100,        # tiny window
             build_messages=_build_stub_messages,
             get_tool_definitions=_stub_tool_defs,
             max_completion_tokens=10,
+            on_save=AsyncMock(),
         )
         session = Session(key="test:over")
         # Add enough messages to exceed the budget

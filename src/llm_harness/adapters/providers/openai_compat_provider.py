@@ -134,10 +134,6 @@ class OpenAICompatProvider(LLMProvider):
         self.extra_headers = extra_headers or {}
         self._spec = spec
 
-        # 设置环境变量（供 MCP 等子进程使用）
-        if api_key and spec and spec.env_key:
-            self._setup_env(api_key, api_base)
-
         # 确定最终 base_url: 用户配置 > spec 默认值
         effective_base = api_base or (spec.default_api_base if spec else None) or None
 
@@ -156,20 +152,6 @@ class OpenAICompatProvider(LLMProvider):
     def api_format(self) -> str:
         """Return the API format identifier -- 'openai' for OpenAI-compatible providers."""
         return "openai"
-
-    def _setup_env(self, api_key: str, api_base: str | None) -> None:
-        """Set environment variables based on provider spec."""
-        spec = self._spec
-        if not spec or not spec.env_key:
-            return
-        if spec.is_gateway:
-            os.environ[spec.env_key] = api_key
-        else:
-            os.environ.setdefault(spec.env_key, api_key)
-        effective_base = api_base or spec.default_api_base
-        for env_name, env_val in spec.env_extras:
-            resolved = env_val.replace("{api_key}", api_key).replace("{api_base}", effective_base)
-            os.environ.setdefault(env_name, resolved)
 
     @staticmethod
     def _apply_cache_control(

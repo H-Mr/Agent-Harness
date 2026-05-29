@@ -1,90 +1,74 @@
-"""Agent — harness + model = runnable agent. Orchestrates session, memory, loop."""
+"""Agent — pure stateless engine. Caller provides session, workspace, and state."""
 
 from __future__ import annotations
 
-import asyncio
-import logging
 from pathlib import Path
 from typing import Any
 
 from llm_harness.core.bus.events import InboundMessage, OutboundMessage
-from llm_harness.core.loop import AgentLoop
-from llm_harness.core.session.manager import SessionManager
+from llm_harness.core.loop import AgentLoop, TurnResult
+from llm_harness.core.session.session import Session
 from llm_harness.adapters.memory.consolidator import MemoryConsolidator
-from llm_harness.adapters.observability.backend import ObservabilityBackend
-
-logger = logging.getLogger(__name__)
+from llm_harness.adapters.observability.emit_helpers import EventEmitter
+from llm_harness.adapters.observability.events import SessionClosed, SessionOpened
 
 
 class Agent:
+    """Pure stateless engine — zero side effects, zero internal state.
+
+    The caller is responsible for:
+    - Loading / persisting the :class:`Session` (pass it to each call).
+    - Resolving the session working directory.
+    - Managing concurrency (create one Agent per thread, or serialize).
+
+    Usage::
+
+        session = Session(key="alice:chat1")
+        agent = Agent(loop, consolidator=cons, emitter=events)
+        result = await agent.process(msg, session=session, cwd=Path("/data/alice/sessions/chat1/files"))
+    """
+
     def __init__(
         self,
         loop: AgentLoop,
-        sessions: SessionManager | None = None,
         consolidator: MemoryConsolidator | None = None,
-        observability: ObservabilityBackend | None = None,
-        workspace_cwd: Path | None = None,
+        emitter: EventEmitter | None = None,
     ):
         self._loop = loop
-        self._sessions = sessions
         self._consolidator = consolidator
-        self._observability = observability
-        self._workspace_cwd = workspace_cwd or Path("/workspace")
-        self._session_locks: dict[str, asyncio.Lock] = {}
-        self._lock_max_size = 10_000
+        self._emitter = emitter
 
-    async def process(self, msg: InboundMessage) -> OutboundMessage | None:
-        session_key = msg.session_key
-        account = msg.sender_id
-        chat_id = msg.chat_id
+    async def process(
+        self,
+        msg: InboundMessage,
+        *,
+        session: Session,
+        cwd: Path,
+        account: str = "",
+    ) -> TurnResult:
+        """Run one turn against *session* in *cwd*."""
+        if self._emitter:
+            await self._emitter.send(SessionOpened(session_key=session.key))
 
-        # {base}/{account}/sessions/{channel}/{chat_id}/files/
-        session_ws = (self._workspace_cwd / account / "sessions" / msg.channel / chat_id / "files").resolve()
-        if not str(session_ws).startswith(str(self._workspace_cwd.resolve())):
-            raise PermissionError(f"Session workspace traversal: {session_key}")
-        session_ws.mkdir(parents=True, exist_ok=True)
+        history = session.get_history()
+        session.add_message("user", msg.content)
 
-        lock = self._session_locks.setdefault(session_key, asyncio.Lock())
+        if self._consolidator:
+            await self._consolidator.maybe_consolidate(session, account=account)
 
-        if len(self._session_locks) > self._lock_max_size:
-            overflow = len(self._session_locks) - self._lock_max_size + 100
-            for stale_key in list(self._session_locks)[:overflow]:
-                if stale_key != session_key:
-                    self._session_locks.pop(stale_key, None)
+        result = await self._loop.run(msg, history, cwd=cwd)
+        self._save_turn(session, result)
 
-        async with lock:
-            try:
-                if self._observability:
-                    await self._observability.emit("message:received", {"session_key": session_key, "content": msg.content[:200]})
+        if self._emitter:
+            await self._emitter.send(
+                SessionClosed(session_key=session.key, message_count=len(session.messages))
+            )
 
-                session = None
-                history: list[dict[str, Any]] = []
-                if self._sessions:
-                    session = await self._sessions.get_or_create(session_key)
-                    history = session.get_history()
-                    session.add_message("user", msg.content)
-                    await self._sessions.save(session)
+        return result
 
-                if self._consolidator and session:
-                    await self._consolidator.maybe_consolidate(session, account=account)
-
-                result = await self._loop.run(msg, history, cwd=session_ws)
-
-                if session:
-                    self._save_turn(session, result)
-                    await self._sessions.save(session)
-
-                if self._observability:
-                    await self._observability.emit("message:sent", {"session_key": session_key})
-
-                return OutboundMessage(channel=msg.channel, chat_id=msg.chat_id, content=result.final_content or "")
-
-            except asyncio.CancelledError:
-                raise
-            except Exception as exc:
-                logger.exception("Error processing message for %s", session_key)
-                return OutboundMessage(channel=msg.channel, chat_id=msg.chat_id,
-                                       content=f"Sorry, I encountered an error: {exc}")
+    async def close(self) -> None:
+        """Release resources held by sub-components (consolidator locks, etc.)."""
+        pass  # stateless engine — nothing to release currently
 
     def _save_turn(self, session, result) -> None:
         for msg in result.messages[result.new_messages_start:]:

@@ -9,7 +9,8 @@ from typing import Any, Callable
 
 from llm_harness.adapters.memory.backend import MemoryBackend
 from llm_harness.adapters.memory.policy import TokenBudgetPolicy
-from llm_harness.core.session.manager import SessionManager
+from llm_harness.adapters.observability.emit_helpers import EventEmitter
+from llm_harness.adapters.observability.events import MemoryConsolidated
 from llm_harness.core.session.session import Session
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,6 @@ class MemoryConsolidator:
     def __init__(
         self,
         backend: MemoryBackend,
-        sessions: SessionManager,
         context_window_tokens: int,
         build_messages: Callable[
             ..., list[dict[str, Any]] | Awaitable[list[dict[str, Any]]]
@@ -38,9 +38,13 @@ class MemoryConsolidator:
         get_tool_definitions: Callable[[], list[dict[str, Any]]],
         max_completion_tokens: int = 4096,
         policy: object = None,
+        *,
+        on_save: Callable[[Session], Awaitable[None]] | None = None,
+        emitter: EventEmitter | None = None,
     ):
         self.backend = backend
-        self.sessions = sessions
+        self._on_save = on_save
+        self._emitter = emitter
         self.context_window_tokens = context_window_tokens
         self.max_completion_tokens = max_completion_tokens
         self._build_messages = build_messages
@@ -53,12 +57,13 @@ class MemoryConsolidator:
         self._lock_max_size = 10_000
 
     def get_lock(self, session_key: str) -> asyncio.Lock:
-        if len(self._locks) > self._lock_max_size:
-            overflow = len(self._locks) - self._lock_max_size + 100
-            for stale_key in list(self._locks)[:overflow]:
-                if stale_key != session_key:
+        if session_key not in self._locks:
+            if len(self._locks) >= self._lock_max_size:
+                overflow = len(self._locks) - self._lock_max_size + 100
+                for stale_key in list(self._locks)[:overflow]:
                     self._locks.pop(stale_key, None)
-        return self._locks.setdefault(session_key, asyncio.Lock())
+            self._locks[session_key] = asyncio.Lock()
+        return self._locks[session_key]
 
     def pick_consolidation_boundary(
         self, session: Session, tokens_to_remove: int
@@ -101,7 +106,12 @@ class MemoryConsolidator:
         if not session.messages or self.context_window_tokens <= 0:
             return
         lock = self.get_lock(session.key)
-        async with lock:
+        try:
+            await asyncio.wait_for(lock.acquire(), timeout=30)
+        except asyncio.TimeoutError:
+            logger.warning("Consolidation lock timeout for %s, skipping", session.key)
+            return
+        try:
             for _ in range(self.MAX_CONSOLIDATION_ROUNDS):
                 chunk = await self._policy.should_consolidate(session, self)
                 if chunk is None or not chunk:
@@ -114,4 +124,9 @@ class MemoryConsolidator:
                 if not ok:
                     return
                 session.remove_before(session.last_consolidated + len(chunk))
-                await self.sessions.save(session)
+                if self._on_save:
+                    await self._on_save(session)
+                if self._emitter:
+                    await self._emitter.send(MemoryConsolidated(session_key=session.key, messages_archived=len(chunk)))
+        finally:
+            lock.release()

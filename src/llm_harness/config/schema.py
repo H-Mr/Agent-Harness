@@ -23,8 +23,6 @@ class ToolsConfig(BaseModel):
         "web_search", "web_fetch", "glob", "grep",
         "memory_read", "memory_write",
         "agent", "send_message", "task_stop",
-        "task_create", "task_list", "task_update",
-        "cron_create", "cron_list", "cron_delete",
         "ask_user_question",
     ])
     disabled: list[str] = Field(default_factory=list)

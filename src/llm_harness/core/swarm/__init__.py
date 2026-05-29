@@ -2,8 +2,7 @@ from llm_harness.core.swarm.backend import AgentBackend, SpawnConfig, SpawnResul
 from llm_harness.core.swarm.definitions import AgentDefinition, get_definition, list_definitions, register_definition
 from llm_harness.core.swarm.mailbox import Mailbox
 from llm_harness.core.swarm.subprocess import SubprocessBackend
-from llm_harness.core.swarm.in_process import InProcessBackend
 
 __all__ = ["AgentBackend", "SpawnConfig", "SpawnResult", "AgentDefinition",
            "get_definition", "list_definitions", "register_definition",
-           "Mailbox", "SubprocessBackend", "InProcessBackend"]
+           "Mailbox", "SubprocessBackend"]

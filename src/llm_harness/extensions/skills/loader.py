@@ -1,4 +1,4 @@
-"""Skill loading from directories."""
+"""Skill loading — Protocol + default filesystem implementation."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import logging
 from pathlib import Path
 from typing import Iterable
 
-from llm_harness.extensions.skills.types import SkillDefinition
+from llm_harness.extensions.skills.types import SkillDefinition, SkillLoader
 
 logger = logging.getLogger(__name__)
 
@@ -16,59 +16,85 @@ def load_skills_from_dirs(
     *,
     source: str = "user",
 ) -> list[SkillDefinition]:
-    """Load markdown skills from one or more directories.
-
-    Supported layout:
-
-    - ``<root>/<skill-dir>/CLAUDE.md``
-    """
-    skills: list[SkillDefinition] = []
+    """Convenience — load skills from directories synchronously."""
     if not directories:
-        return skills
+        return []
+    return DirectorySkillLoader(directories, source=source).load_sync()
 
-    seen: set[Path] = set()
-    for directory in directories:
-        root = Path(directory).expanduser().resolve()
-        if not root.exists():
-            logger.warning("Skill directory '%s' does not exist, skipping", root)
-            continue
-        candidates: list[Path] = []
-        for child in sorted(root.iterdir()):
-            if child.is_dir():
-                skill_path = child / "CLAUDE.md"
-                if skill_path.exists():
-                    candidates.append(skill_path)
-        for path in candidates:
-            if path in seen:
+
+class DirectorySkillLoader:
+    """Default :class:`SkillLoader` implementation — scans directories for ``<name>/SKILL.md``.
+
+    Usage::
+
+        loader = DirectorySkillLoader(["./skills", "/opt/skills"])
+        skills = await loader.load()
+    """
+
+    def __init__(
+        self,
+        directories: Iterable[str | Path],
+        *,
+        source: str = "user",
+    ) -> None:
+        self._directories = list(directories)
+        self._source = source
+
+    def load_sync(self) -> list[SkillDefinition]:
+        """Synchronous convenience for filesystem-backed loading."""
+        return self._scan()
+
+    async def load(self) -> list[SkillDefinition]:
+        """Async loader (compatible with :class:`SkillLoader` Protocol)."""
+        return self._scan()
+
+    def _scan(self) -> list[SkillDefinition]:
+        skills: list[SkillDefinition] = []
+        seen: set[Path] = set()
+
+        for directory in self._directories:
+            root = Path(directory).expanduser().resolve()
+            if not root.exists():
+                logger.warning("Skill directory '%s' does not exist, skipping", root)
                 continue
-            seen.add(path)
-            content = path.read_text(encoding="utf-8")
-            default_name = path.parent.name
-            name, description = parse_skill_markdown(default_name, content)
-            skills.append(
-                SkillDefinition(
-                    name=name,
-                    description=description,
-                    content=content,
-                    source=source,
-                    path=str(path),
+            candidates: list[Path] = []
+            for child in sorted(root.iterdir()):
+                if child.is_dir():
+                    skill_path = child / "SKILL.md"
+                    if skill_path.exists():
+                        candidates.append(skill_path)
+            for path in candidates:
+                if path in seen:
+                    continue
+                seen.add(path)
+                content = path.read_text(encoding="utf-8")
+                name, description = parse_skill_markdown(path.parent.name, content)
+                skills.append(
+                    SkillDefinition(
+                        name=name,
+                        description=description,
+                        content=content,
+                        source=self._source,
+                        path=str(path),
+                    )
                 )
-            )
-    return skills
+        return skills
 
 
 def parse_skill_markdown(default_name: str, content: str) -> tuple[str, str]:
-    """Parse name and description from a skill markdown file with YAML frontmatter support."""
+    """Parse name and description from a SKILL.md file.
+
+    Supports YAML frontmatter (``---`` delimited), with fallback to
+    Markdown heading and first paragraph.
+    """
     name = default_name
     description = ""
 
     lines = content.splitlines()
 
-    # Try YAML frontmatter first (--- ... ---)
     if lines and lines[0].strip() == "---":
         for i, line in enumerate(lines[1:], 1):
             if line.strip() == "---":
-                # Parse frontmatter fields
                 for fm_line in lines[1:i]:
                     fm_stripped = fm_line.strip()
                     if fm_stripped.startswith("name:"):
@@ -81,7 +107,6 @@ def parse_skill_markdown(default_name: str, content: str) -> tuple[str, str]:
                             description = val
                 break
 
-    # Fallback: extract from headings and first paragraph
     if not description:
         for line in lines:
             stripped = line.strip()

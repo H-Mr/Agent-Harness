@@ -1,10 +1,12 @@
-"""SRT-based sandbox — filesystem validation + OS-level enforcement via srt CLI.
+"""SRT-based sandbox — filesystem validation + optional OS-level enforcement.
 
 Two-layer defence:
   1. Business logic: all file paths are resolved relative to workspace root
-     and validated before any I/O.
-  2. OS kernel: ``srt`` wraps subprocess execution with Seatbelt (macOS) or
-     bubblewrap (Linux) so even a compromised process cannot escape.
+     and validated before any I/O (always active).
+  2. OS kernel (optional): ``srt`` wraps subprocess execution with Seatbelt
+     (macOS) or bubblewrap (Linux).  When ``srt`` is not installed the
+     business-layer validation still applies — subprocesses run without
+     the kernel-level boundary but cannot escape via file tools.
 """
 
 from __future__ import annotations
@@ -12,6 +14,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+import shutil
 from pathlib import Path
 
 from llm_harness.adapters.sandbox.backend import ExecResult, SandboxSession
@@ -19,6 +22,10 @@ from llm_harness.adapters.sandbox.backend import ExecResult, SandboxSession
 logger = logging.getLogger(__name__)
 
 _SRT_DEFAULT_TIMEOUT = 60
+
+
+def _has_srt() -> bool:
+    return shutil.which("srt") is not None
 
 
 class SRTSandboxBackend:
@@ -107,16 +114,16 @@ class SRTSandboxBackend:
         env: dict | None = None,
         timeout: int = _SRT_DEFAULT_TIMEOUT,
     ) -> ExecResult:
-        """Run *command* under ``srt`` so the OS enforces the workspace boundary."""
+        """Run *command*.  Wraps with ``srt`` when available, otherwise runs directly
+        (business-layer path validation still applies to file tools)."""
         try:
+            if _has_srt():
+                cmd = ["srt", f"--read={self._root}", f"--write={self._root}", "--", "sh", "-c", command]
+            else:
+                cmd = ["sh", "-c", command]
+
             proc = await asyncio.create_subprocess_exec(
-                "srt",
-                f"--read={self._root}",
-                f"--write={self._root}",
-                "--",
-                "sh",
-                "-c",
-                command,
+                *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.STDOUT,
                 cwd=cwd,

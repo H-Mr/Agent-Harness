@@ -1,4 +1,4 @@
-"""llm-harness entry point — --worker mode or normal startup."""
+"""Worker subprocess entry point — internal, used by SubprocessBackend."""
 
 import os
 import sys
@@ -9,12 +9,13 @@ def main():
     if "--worker" in sys.argv:
         asyncio.run(worker_main())
     else:
-        asyncio.run(normal_main())
+        print("llm-harness is an engine library — use the API directly", file=sys.stderr)
+        print("  from llm_harness import AgentLoop, Session, Harness", file=sys.stderr)
 
 
 async def worker_main():
     """Worker process: read prompt from stdin, run ReAct loop, write result to stdout."""
-    import argparse, json
+    import argparse
     from llm_harness.adapters.providers.registry import detect_provider, instantiate_provider
     from llm_harness.core.tools.base import ToolRegistry
     from llm_harness.core.loop import AgentLoop
@@ -25,6 +26,7 @@ async def worker_main():
     parser.add_argument("--tools", type=str, default="read_file,glob,grep,web_search")
     parser.add_argument("--model", type=str, default="")
     parser.add_argument("--workspace", type=str, default="")
+    parser.add_argument("--permissions", type=str, default="default")
     args = parser.parse_args()
 
     prompt = sys.stdin.read().strip()
@@ -77,23 +79,6 @@ async def worker_main():
 
     result = await loop.run(_Msg(), [])
     print(result.final_content or "")
-
-
-async def normal_main():
-    """Normal startup — launch the full harness + agent + message loop."""
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, default=None, help="Path to YAML config")
-    parser.add_argument("--model", type=str, default=None, help="Model override")
-    parser.add_argument("--workspace", type=str, default=".", help="Workspace root")
-    args, _ = parser.parse_known_args()
-
-    from llm_harness import launch
-    await launch(
-        config=args.config,
-        model=args.model or "",
-        workspace=args.workspace,
-    )
 
 
 if __name__ == "__main__":
