@@ -1,6 +1,6 @@
 """llm-harness — pure stateless agent engine kernel."""
 
-__version__ = "0.1.0"
+__version__ = "0.3.0"
 
 from llm_harness.core.harness import Harness
 from llm_harness.core.agent import Agent
