@@ -76,9 +76,7 @@ class Harness:
             provider=self.provider,
             tools=self._tools,
             model=self.model,
-            on_build_context=lambda msg, history: [
-                *self._build_system(msg), *history, {"role": "user", "content": msg.content}
-            ],
+            on_build_context=lambda msg, history: self._build_context(msg, history),
             on_tool_check=lambda name, tool, args: (
                 self._permissions.evaluate(
                     name,
@@ -94,7 +92,10 @@ class Harness:
         )
         return Agent(loop, consolidator=self._consolidator, emitter=emitter)
 
-    def _build_system(self, msg):
+    async def _build_context(self, msg, history):
+        return [*await self._build_system(msg), *history, {"role": "user", "content": msg.content}]
+
+    async def _build_system(self, msg):
         from datetime import datetime, timezone
         from llm_harness.core.swarm.definitions import list_definitions
 
@@ -103,7 +104,9 @@ class Harness:
             f"Current time: {datetime.now(timezone.utc).isoformat()}",
         ]
         if self._memory:
-            ctx = msg.content  # caller provides pre-loaded context if needed
+            ctx = await self._memory.get_context(msg.content)
+            if ctx:
+                parts.append(f"## Memory Context\n{ctx}")
         defs = list_definitions()
         if defs:
             agent_list = "\n".join(f"- **{d.name}**: {d.description}" for d in defs)
