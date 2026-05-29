@@ -1,0 +1,58 @@
+site_name: llm-harness
+site_description: Pure async, dependency-injected Agent development framework
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - admonition
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Tutorials:
+    - 7-Day Mastery: tutorials/7-day-mastery.md
+    - Quickstart: tutorials/quickstart.md
+    - First Agent: tutorials/first-agent.md
+  - How-To Guides:
+    - Custom Tool: how-to/custom-tool.md
+    - Custom Provider: how-to/custom-provider.md
+    - Custom Sandbox: how-to/custom-sandbox.md
+    - Custom Memory: how-to/custom-memory.md
+    - Channels: how-to/channels.md
+    - MCP Integration: how-to/mcp-integration.md
+    - Hooks: how-to/hooks.md
+    - Skills: how-to/skills.md
+    - Permissions: how-to/permissions.md
+  - Reference:
+    - Harness: reference/harness.md
+    - Agent: reference/agent.md
+    - AgentLoop: reference/loop.md
+    - Session: reference/session.md
+    - Tools: reference/tools.md
+    - Providers: reference/providers.md
+    - Config: reference/config.md
+    - Events: reference/events.md
+  - Explanation:
+    - Architecture: explanation/architecture.md
+    - Dependency Injection: explanation/dependency-injection.md
+    - Protocol Design: explanation/protocol-design.md
+    - Async Model: explanation/async-model.md
