@@ -487,14 +487,13 @@ boundary = pick_consolidation_boundary(session, (estimated - budget) // 2)
 
 **MessageCountPolicy** 是另一种策略：当活跃消息数超过 `max_messages` 时触发归档。
 
-**MemoryBackend Protocol（5 个方法）：**
+**MemoryBackend Protocol（4 个方法）：**
 
 ```python
 class MemoryBackend(Protocol):
     async def get_context(self, namespace: str) -> str: ...
     async def read_section(self, namespace: str, section: str) -> str: ...
     async def append_section(self, namespace: str, section: str, entry: str) -> None: ...
-    async def add_history(self, namespace: str, entry: str) -> None: ...
     async def consolidate(self, namespace, messages, provider=None, model="") -> bool: ...
 ```
 
@@ -1550,13 +1549,12 @@ class SandboxBackend(Protocol):
     async def grep(self, session_key: str, pattern: str, path: str) -> list[str]: ...
     async def execute(self, session_key, command, *, cwd="/workspace", env=None, timeout=60) -> ExecResult: ...
 
-# MemoryBackend Protocol（5 个方法）
+# MemoryBackend Protocol（4 个方法）
 @runtime_checkable
 class MemoryBackend(Protocol):
     async def get_context(self, namespace: str) -> str: ...
     async def read_section(self, namespace: str, section: str) -> str: ...
     async def append_section(self, namespace: str, section: str, entry: str) -> None: ...
-    async def add_history(self, namespace: str, entry: str) -> None: ...
     async def consolidate(self, namespace, messages, provider=None, model="") -> bool: ...
 
 # AgentBackend Protocol（3 个方法）
@@ -1649,11 +1647,6 @@ class RedisMemoryBackend:
         existing = await self._redis.hget(key, "content") or ""
         await self._redis.hset(key, "content", existing + "\n" + entry)
 
-    async def add_history(self, namespace: str, entry: str) -> None:
-        import time
-        key = self._history_key(namespace)
-        await self._redis.zadd(key, {entry: time.time()})
-
     async def consolidate(self, namespace: str, messages: list[dict[str, Any]],
                           provider: Any = None, model: str = "") -> bool:
         key = self._history_key(namespace)
@@ -1694,14 +1687,6 @@ class TestRedisMemoryBackend:
         content = await backend.read_section("test:ns1", "memory")
         assert "first entry" in content
         assert "second entry" in content
-
-    @pytest.mark.asyncio
-    async def test_add_history(self, backend):
-        await backend.add_history("test:ns1", "user hello")
-        await backend.add_history("test:ns1", "assistant hi")
-        key = backend._history_key("test:ns1")
-        count = await backend._redis.zcard(key)
-        assert count == 2
 
     @pytest.mark.asyncio
     async def test_consolidate(self, backend):

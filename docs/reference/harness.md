@@ -56,11 +56,12 @@ def create_agent(self) -> Agent
 
 ### _build_system(msg)
 
-从以下部分组装系统提示：
+`_build_system` 是异步方法。从以下部分组装系统提示：
 1. `system_prompt`（或默认值）
 2. 当前 UTC 时间
 3. 可用的子代理定义（来自 swarm）
 4. 可用的技能（来自 skill registry）
+5. **Memory Context**（如果配置了 memory）—— 调用 `self._memory.get_context(msg.content)` 并将结果作为 `## Memory Context` 段落注入系统提示。
 
 返回 `[{"role": "system", "content": "..."}]`
 

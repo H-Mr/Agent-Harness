@@ -6,7 +6,7 @@
 
 ## 前置条件
 
-- 了解 MemoryBackend Protocol（5 个方法）
+- 了解 MemoryBackend Protocol（4 个方法）
 
 ## 分步指南
 
@@ -17,7 +17,6 @@ class MemoryBackend(Protocol):
     async def get_context(self, namespace: str) -> str: ...
     async def read_section(self, namespace: str, section: str) -> str: ...
     async def append_section(self, namespace: str, section: str, entry: str) -> None: ...
-    async def add_history(self, namespace: str, entry: str) -> None: ...
     async def consolidate(self, namespace: str, messages: list[dict[str, Any]],
                           provider: Any = None, model: str = "") -> bool: ...
 ```
@@ -43,9 +42,6 @@ class RedisMemoryBackend:
 
     async def append_section(self, namespace: str, section: str, entry: str) -> None:
         await self._redis.append(f"llm:sec:{namespace}:{section}", entry + "\n")
-
-    async def add_history(self, namespace: str, entry: str) -> None:
-        await self._redis.rpush(f"llm:hist:{namespace}", entry)
 
     async def consolidate(self, namespace: str, messages: list[dict[str, Any]],
                           provider: Any = None, model: str = "") -> bool:

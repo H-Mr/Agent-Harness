@@ -39,13 +39,12 @@ grep(session_key, pattern, path) → list[str]
 execute(session_key, command, *, cwd, env, timeout) → ExecResult
 ```
 
-### MemoryBackend（5 个方法）
+### MemoryBackend（4 个方法）
 
 ```
 get_context(namespace) → str
 read_section(namespace, section) → str
 append_section(namespace, section, entry)
-add_history(namespace, entry)
 consolidate(namespace, messages, provider, model) → bool
 ```
 
